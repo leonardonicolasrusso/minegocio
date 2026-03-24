@@ -519,7 +519,7 @@ body {
         onkeydown="if(event.key==='Enter') doLogin()">
     </div>
 
-    <button class="btn-login" onclick="doLogin()">Ingresar a mi panel</button>
+    <button class="btn-login" id="btn-login" onclick="doLogin()">Ingresar a mi panel</button>
     <div class="login-error" id="login-error">Email o contraseña incorrectos. Intentá de nuevo.</div>
 
     <p class="login-hint">¿Problemas para ingresar? Escribinos por WhatsApp.</p>
@@ -810,51 +810,64 @@ function goTo(section) {
 // LOGIN / LOGOUT
 // ══════════════════════════════════════
 async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const pass  = document.getElementById('login-pass').value;
-  const err   = document.getElementById('login-error');
-
-  if (!email || !pass) { err.classList.add('visible'); return; }
-
-  const { data, error } = await sb
-    .from('stores')
-    .select('*')
-    .eq('email', email)
-    .eq('password', pass)
-    .single();
-
-  if (error || !data) {
-    err.classList.add('visible');
-    document.getElementById('login-pass').value = '';
-    return;
-  }
-
-  // Verificar si está bloqueada o vencida
-  const hoy = new Date(); hoy.setHours(0,0,0,0);
-  const vence = new Date(data.expiry);
-  if (data.status === 'blocked' || vence < hoy) {
-    err.textContent = 'Tu tienda está inactiva. Contactá a minegocio.com.ar para reactivarla.';
-    err.classList.add('visible');
-    return;
-  }
-
-  state.loggedIn  = true;
-  state.storeId   = data.id;
-  state.storeName = data.name;
-  state.storeSlug = data.slug;
-  state.storePass = data.password;
-  state.datos     = {
-    nombre:      data.name,
-    rubro:       data.rubro || '',
-    descripcion: data.description || '',
-    whatsapp:    data.wa || '',
-    zona:        data.zona || '',
-    pagos:       data.pagos || '',
-  };
+  const email  = document.getElementById('login-email').value.trim();
+  const pass   = document.getElementById('login-pass').value;
+  const err    = document.getElementById('login-error');
+  const btn    = document.getElementById('btn-login');
 
   err.classList.remove('visible');
-  updateDashboard();
-  showScreen('dashboard');
+  if (!email || !pass) { err.textContent = 'Completá email y contraseña.'; err.classList.add('visible'); return; }
+
+  btn.textContent = 'Ingresando...';
+  btn.disabled = true;
+
+  try {
+    const { data, error } = await Promise.race([
+      sb.from('stores').select('*').eq('email', email).eq('password', pass).single(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+    ]);
+
+    if (error || !data) {
+      err.textContent = 'Email o contraseña incorrectos. Intentá de nuevo.';
+      err.classList.add('visible');
+      document.getElementById('login-pass').value = '';
+      return;
+    }
+
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const vence = new Date(data.expiry);
+    if (data.status === 'blocked' || vence < hoy) {
+      err.textContent = 'Tu tienda está inactiva. Contactá a minegocio para reactivarla.';
+      err.classList.add('visible');
+      return;
+    }
+
+    state.loggedIn  = true;
+    state.storeId   = data.id;
+    state.storeName = data.name;
+    state.storeSlug = data.slug;
+    state.storePass = data.password;
+    state.datos     = {
+      nombre:      data.name,
+      rubro:       data.rubro || '',
+      descripcion: data.description || '',
+      whatsapp:    data.wa || '',
+      zona:        data.zona || '',
+      pagos:       data.pagos || '',
+    };
+
+    updateDashboard();
+    showScreen('dashboard');
+
+  } catch (e) {
+    err.textContent = e.message === 'timeout'
+      ? 'La conexión tardó demasiado. Revisá tu internet e intentá de nuevo.'
+      : 'Error de conexión. Intentá de nuevo.';
+    err.classList.add('visible');
+  } finally {
+    btn.textContent = 'Ingresar a mi panel';
+    btn.disabled = false;
+  }
 }
 
 function doLogout() {
