@@ -1,19 +1,10 @@
 {
   "rewrites": [
-    { "source": "/",                    "destination": "/public/index.html" },
-    { "source": "/404",                 "destination": "/public/404.html" },
-    { "source": "/admin",               "destination": "/admin/index.html" },
-    { "source": "/panel-tienda",        "destination": "/panel/index.html" },
-    { "source": "/jae-accesorios",      "destination": "/public/jae-accesorios.html" },
-    { "source": "/libreria-vitreaux",   "destination": "/public/libreria-vitreaux.html" }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options",        "value": "SAMEORIGIN" }
-      ]
-    }
+    { "source": "/admin",             "destination": "/admin/index.html" },
+    { "source": "/panel-tienda",      "destination": "/panel/index.html" },
+    { "source": "/jae-accesorios",    "destination": "/public/jae-accesorios.html" },
+    { "source": "/libreria-vitreaux", "destination": "/public/libreria-vitreaux.html" },
+    { "source": "/404",               "destination": "/public/404.html" },
+    { "source": "/",                  "destination": "/public/index.html" }
   ]
 }
