@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cargando tienda...</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0f0e0c;
+  --ink-soft: #706b65;
+  --bg: #f8f6f1;
+  --surface: #ffffff;
+  --border: rgba(15,14,12,0.09);
+  --wa: #25D366;
+  --wa-dark: #1aab52;
+  --accent: #d4522a;
+  --accent-soft: #fbeee9;
+  --r: 16px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  padding-bottom: 100px;
+}
+
+/* ── LOADING ── */
+.loading-screen {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 100vh; gap: 16px;
+}
+.loading-spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--ink);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 14px; color: var(--ink-soft); }
+
+/* ── ERROR ── */
+.error-screen {
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 100vh; padding: 40px 24px; text-align: center;
+}
+.error-icon { font-size: 48px; margin-bottom: 16px; }
+.error-title {
+  font-family: 'Fraunces', serif;
+  font-size: 28px; margin-bottom: 8px;
+}
+.error-desc { font-size: 15px; color: var(--ink-soft); margin-bottom: 24px; line-height: 1.6; }
+.btn-home {
+  padding: 12px 28px; background: var(--ink); color: white;
+  border-radius: 100px; text-decoration: none;
+  font-size: 14px; font-weight: 500;
+}
+
+/* ── STORE ── */
+.store-wrap { display: none; }
+
+.store-header {
+  background: var(--ink); color: white;
+  padding: 28px 24px 22px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.store-header::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 100% at 50% 120%, rgba(212,82,42,0.35) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.store-plan-badge {
+  display: inline-block; padding: 4px 12px; border-radius: 100px;
+  font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  background: rgba(255,255,255,.1); color: rgba(255,255,255,.7);
+  margin-bottom: 14px; position: relative;
+}
+
+.store-name {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(30px, 8vw, 50px);
+  font-weight: 600; line-height: 1.0;
+  letter-spacing: -0.02em; margin-bottom: 8px; position: relative;
+}
+
+.store-desc {
+  font-size: 14px; color: rgba(255,255,255,.65);
+  font-weight: 300; max-width: 340px;
+  margin: 0 auto 16px; line-height: 1.5; position: relative;
+}
+
+.store-meta {
+  display: flex; justify-content: center;
+  gap: 18px; flex-wrap: wrap;
+  font-size: 12px; color: rgba(255,255,255,.5); position: relative;
+}
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-size: 11px; font-weight: 600; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--ink-soft);
+  padding: 24px 20px 10px; max-width: 720px; margin: 0 auto;
+}
+
+/* ── GRID ── */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+  gap: 14px; padding: 0 16px;
+  max-width: 720px; margin: 0 auto;
+}
+
+/* ── CARD ── */
+.card {
+  background: var(--surface); border-radius: var(--r);
+  overflow: hidden; border: 1px solid var(--border);
+  transition: transform .2s, box-shadow .2s;
+  animation: fadeUp .4s ease both;
+}
+.card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,.1); }
+
+.card-img {
+  width: 100%; aspect-ratio: 1; object-fit: cover; display: block;
+  background: var(--bg);
+}
+
+.card-body { padding: 12px 14px 14px; }
+.card-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; line-height: 1.3; }
+.card-desc { font-size: 12px; color: var(--ink-soft); line-height: 1.4; margin-bottom: 10px; }
+.card-price {
+  font-family: 'Fraunces', serif;
+  font-size: 22px; font-weight: 600;
+  letter-spacing: -0.02em; margin-bottom: 12px;
+}
+
+/* ── BOTÓN WA SIMPLE (plan básico) ── */
+.btn-wa {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  width: 100%; padding: 10px;
+  background: var(--wa); color: white;
+  border: none; border-radius: 10px;
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; text-decoration: none; transition: background .2s;
+}
+.btn-wa:hover { background: var(--wa-dark); }
+.btn-wa svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* ── CARRITO (plan pro) ── */
+.qty-row {
+  display: flex; align-items: center;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  overflow: hidden; margin-bottom: 8px;
+}
+.qty-btn {
+  width: 36px; height: 36px; background: var(--bg);
+  border: none; font-size: 18px; cursor: pointer; color: var(--ink);
+  transition: background .15s; display: flex; align-items: center; justify-content: center;
+}
+.qty-btn:hover { background: #eae6e0; }
+.qty-num { flex: 1; text-align: center; font-size: 15px; font-weight: 600; background: white; }
+.in-cart { font-size: 11px; color: var(--wa-dark); font-weight: 500; text-align: center; min-height: 16px; }
+
+/* ── CART BAR ── */
+.cart-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--ink); color: white;
+  padding: 16px 20px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  transform: translateY(100%);
+  transition: transform .35s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 100;
+}
+.cart-bar.visible { transform: translateY(0); }
+.cart-bar-info { flex: 1; }
+.cart-bar-label { font-size: 12px; color: rgba(255,255,255,.5); margin-bottom: 2px; }
+.cart-bar-total {
+  font-family: 'Fraunces', serif;
+  font-size: 26px; font-weight: 600; letter-spacing: -0.02em; line-height: 1;
+}
+.btn-cart {
+  display: flex; align-items: center; gap: 8px;
+  padding: 13px 22px; background: var(--wa); color: white;
+  border: none; border-radius: 100px;
+  font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600;
+  cursor: pointer; white-space: nowrap; transition: background .2s;
+}
+.btn-cart:hover { background: var(--wa-dark); }
+.btn-cart svg { width: 18px; height: 18px; }
+
+/* ── EMPTY ── */
+.empty-products {
+  text-align: center; padding: 60px 24px;
+  color: var(--ink-soft); font-size: 15px;
+}
+
+/* ── FOOTER ── */
+.store-footer {
+  text-align: center; padding: 24px 20px 40px;
+  font-size: 12px; color: var(--ink-soft);
+  border-top: 1px solid var(--border); margin-top: 32px;
+}
+.store-footer a { color: var(--accent); font-weight: 600; text-decoration: none; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.card:nth-child(1){animation-delay:.05s}
+.card:nth-child(2){animation-delay:.10s}
+.card:nth-child(3){animation-delay:.15s}
+.card:nth-child(4){animation-delay:.20s}
+.card:nth-child(5){animation-delay:.25s}
+.card:nth-child(6){animation-delay:.30s}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-screen" id="loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Cargando tienda...</div>
+</div>
+
+<!-- ERROR -->
+<div class="error-screen" id="error-screen">
+  <div class="error-icon">🔍</div>
+  <div class="error-title">Tienda no encontrada</div>
+  <div class="error-desc">El link que seguiste no existe o la tienda está inactiva.</div>
+  <a href="https://minegocio1.vercel.app" class="btn-home">Ir al inicio</a>
+</div>
+
+<!-- STORE -->
+<div class="store-wrap" id="store-wrap">
+
+  <div class="store-header">
+    <div class="store-plan-badge" id="plan-badge">Catálogo</div>
+    <div class="store-name" id="store-name">...</div>
+    <div class="store-desc" id="store-desc"></div>
+    <div class="store-meta" id="store-meta"></div>
+  </div>
+
+  <div class="section-label" id="section-label">Nuestros productos</div>
+  <div class="products-grid" id="products-grid"></div>
+
+  <div class="store-footer">
+    Creado con <a href="https://minegocio1.vercel.app">minegocio.com.ar</a> · Tu negocio online en minutos
+  </div>
+
+</div>
+
+<!-- CART BAR (solo plan pro) -->
+<div class="cart-bar" id="cart-bar">
+  <div class="cart-bar-info">
+    <div class="cart-bar-label" id="cart-label">0 productos</div>
+    <div class="cart-bar-total" id="cart-total">$0</div>
+  </div>
+  <button class="btn-cart" onclick="enviarPedido()">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.557 4.126 1.533 5.862L.057 23.143a.75.75 0 00.914.914l5.28-1.476A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.96 0-3.797-.5-5.398-1.377l-.386-.217-3.993 1.115 1.114-3.993-.217-.386A9.95 9.95 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+    Enviar pedido
+  </button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPA_URL = 'https://mbeplryehybxsifkltod.supabase.co';
+const SUPA_KEY = 'sb_publishable_mOqt9UcDHLg9J0ZfV1KTEw_XJ6CR0kE';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let storeData = null;
+let products  = [];
+let qtys      = {};
+
+// ── DETECTAR SLUG DESDE LA URL ──
+function getSlug() {
+  const path = window.location.pathname.replace(/^\//, '').replace(/\/$/, '');
+  return path || null;
+}
+
+// ── INIT ──
+async function init() {
+  const slug = getSlug();
+  if (!slug || slug === 'tienda') { showError(); return; }
+
+  const { data: store, error: storeErr } = await sb
+    .from('stores')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+
+  if (storeErr || !store) { showError(); return; }
+
+  // Verificar que esté activa
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const vence = new Date(store.expiry);
+  if (store.status === 'blocked' || vence < hoy) { showError('blocked'); return; }
+
+  storeData = store;
+  document.title = store.name + ' — minegocio.com.ar';
+
+  // Registrar click de visita
+  await sb.from('wa_clicks').insert([{ store_id: store.id, type: 'consulta' }]).catch(() => {});
+
+  // Cargar productos
+  const { data: prods } = await sb
+    .from('products')
+    .select('*')
+    .eq('store_id', store.id)
+    .eq('active', true)
+    .order('position', { ascending: true });
+
+  products = prods || [];
+  products.forEach(p => { qtys[p.id] = 0; });
+
+  renderStore();
+}
+
+function showError(type) {
+  document.getElementById('loading').style.display = 'none';
+  const el = document.getElementById('error-screen');
+  if (type === 'blocked') {
+    el.querySelector('.error-icon').textContent = '🔒';
+    el.querySelector('.error-title').textContent = 'Tienda temporalmente inactiva';
+    el.querySelector('.error-desc').textContent = 'Este negocio está resolviendo una situación interna. Intentá más tarde.';
+  }
+  el.style.display = 'flex';
+}
+
+function renderStore() {
+  const s = storeData;
+
+  document.getElementById('plan-badge').textContent  = s.plan === 'pro' ? 'Plan Pro · Mini Tienda' : 'Plan Básico · Catálogo';
+  document.getElementById('store-name').textContent  = s.name;
+  document.getElementById('store-desc').textContent  = s.description || '';
+
+  const meta = [];
+  if (s.zona)  meta.push(`📍 ${s.zona}`);
+  if (s.pagos) meta.push(`💳 ${s.pagos}`);
+  document.getElementById('store-meta').textContent = meta.join('  ·  ');
+
+  const grid = document.getElementById('products-grid');
+
+  if (products.length === 0) {
+    grid.innerHTML = '<div class="empty-products">Esta tienda todavía no cargó productos.</div>';
+  } else if (s.plan === 'pro') {
+    document.getElementById('section-label').textContent = 'Elegí tus productos';
+    grid.innerHTML = products.map(p => `
+      <div class="card">
+        <img class="card-img" src="${p.photo_url || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&q=80'}"
+          alt="${p.name}" onerror="this.src='https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&q=80'">
+        <div class="card-body">
+          <div class="card-name">${p.name}</div>
+          ${p.description ? `<div class="card-desc">${p.description}</div>` : ''}
+          <div class="card-price">$${Number(p.price).toLocaleString('es-AR')}</div>
+          <div class="qty-row">
+            <button class="qty-btn" onclick="changeQty('${p.id}',-1)">−</button>
+            <span class="qty-num" id="q-${p.id}">0</span>
+            <button class="qty-btn" onclick="changeQty('${p.id}',1)">+</button>
+          </div>
+          <div class="in-cart" id="ic-${p.id}"></div>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    document.getElementById('section-label').textContent = 'Nuestros productos';
+    grid.innerHTML = products.map(p => `
+      <div class="card">
+        <img class="card-img" src="${p.photo_url || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&q=80'}"
+          alt="${p.name}" onerror="this.src='https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&q=80'">
+        <div class="card-body">
+          <div class="card-name">${p.name}</div>
+          ${p.description ? `<div class="card-desc">${p.description}</div>` : ''}
+          <div class="card-price">$${Number(p.price).toLocaleString('es-AR')}</div>
+          <a class="btn-wa" href="${waLink(p)}" target="_blank" onclick="registrarClick('${p.id}')">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.557 4.126 1.533 5.862L.057 23.143a.75.75 0 00.914.914l5.28-1.476A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.96 0-3.797-.5-5.398-1.377l-.386-.217-3.993 1.115 1.114-3.993-.217-.386A9.95 9.95 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+            Consultar
+          </a>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('store-wrap').style.display = 'block';
+}
+
+function waLink(p) {
+  const num = (storeData.wa || '').replace(/\D/g, '');
+  const msg = encodeURIComponent(`Hola ${storeData.name}! Quiero consultar por ${p.name} ($${Number(p.price).toLocaleString('es-AR')})`);
+  return `https://wa.me/54${num}?text=${msg}`;
+}
+
+async function registrarClick(productId) {
+  await sb.from('wa_clicks').insert([{ store_id: storeData.id, product_id: productId, type: 'consulta' }]).catch(() => {});
+  await sb.from('stores').update({ wa_clicks: (storeData.wa_clicks || 0) + 1 }).eq('id', storeData.id).catch(() => {});
+}
+
+// ── CARRITO (plan pro) ──
+function changeQty(id, delta) {
+  qtys[id] = Math.max(0, (qtys[id] || 0) + delta);
+  document.getElementById('q-' + id).textContent = qtys[id];
+  const p = products.find(p => p.id === id);
+  const ic = document.getElementById('ic-' + id);
+  ic.textContent = qtys[id] > 0 ? `✓ $${(qtys[id] * p.price).toLocaleString('es-AR')} en tu pedido` : '';
+  actualizarCarrito();
+}
+
+function actualizarCarrito() {
+  let total = 0, count = 0;
+  products.forEach(p => {
+    total += (qtys[p.id] || 0) * p.price;
+    count += qtys[p.id] || 0;
+  });
+  document.getElementById('cart-total').textContent = '$' + total.toLocaleString('es-AR');
+  document.getElementById('cart-label').textContent = count + (count === 1 ? ' producto' : ' productos');
+  const bar = document.getElementById('cart-bar');
+  count > 0 ? bar.classList.add('visible') : bar.classList.remove('visible');
+}
+
+async function enviarPedido() {
+  const lineas = [`Hola ${storeData.name}! 📦 Quiero hacer este pedido:\n`];
+  let total = 0;
+  products.forEach(p => {
+    if (qtys[p.id] > 0) {
+      const sub = qtys[p.id] * p.price;
+      total += sub;
+      lineas.push(`▸ ${qtys[p.id]}x ${p.name} — $${sub.toLocaleString('es-AR')}`);
+    }
+  });
+  lineas.push(`\n*Total: $${total.toLocaleString('es-AR')}*`);
+  lineas.push('¿Cómo coordino el pago y retiro?');
+
+  await registrarClick(null);
+  const num = (storeData.wa || '').replace(/\D/g, '');
+  window.open(`https://wa.me/54${num}?text=${encodeURIComponent(lineas.join('\n'))}`, '_blank');
+}
+
+init();
+</script>
+</body>
+</html>
