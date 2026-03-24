@@ -762,6 +762,9 @@ const SUPA_URL = 'https://mbeplryehybxsifkltod.supabase.co';
 const SUPA_KEY = 'sb_publishable_mOqt9UcDHLg9J0ZfV1KTEw_XJ6CR0kE';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
+// Despertar Supabase en segundo plano apenas carga la página
+sb.from('stores').select('id').limit(1).then(() => {}).catch(() => {});
+
 let state = {
   loggedIn: false,
   storeId: null,
