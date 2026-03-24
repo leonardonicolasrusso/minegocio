@@ -821,11 +821,19 @@ async function doLogin() {
   btn.textContent = 'Ingresando...';
   btn.disabled = true;
 
+  const tryLogin = () => sb.from('stores').select('*').eq('email', email).eq('password', pass).single();
+
   try {
-    const { data, error } = await Promise.race([
-      sb.from('stores').select('*').eq('email', email).eq('password', pass).single(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
-    ]);
+    let result = await tryLogin();
+
+    // Si falló por timeout o error de red, reintentamos una vez automáticamente
+    if (result.error) {
+      btn.textContent = 'Reintentando...';
+      await new Promise(r => setTimeout(r, 1500));
+      result = await tryLogin();
+    }
+
+    const { data, error } = result;
 
     if (error || !data) {
       err.textContent = 'Email o contraseña incorrectos. Intentá de nuevo.';
@@ -860,9 +868,7 @@ async function doLogin() {
     showScreen('dashboard');
 
   } catch (e) {
-    err.textContent = e.message === 'timeout'
-      ? 'La conexión tardó demasiado. Revisá tu internet e intentá de nuevo.'
-      : 'Error de conexión. Intentá de nuevo.';
+    err.textContent = 'Error de conexión. Revisá tu internet e intentá de nuevo.';
     err.classList.add('visible');
   } finally {
     btn.textContent = 'Ingresar a mi panel';
