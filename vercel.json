@@ -5,5 +5,6 @@
     { "source": "/jae-accesorios",     "destination": "/jae-accesorios.html" },
     { "source": "/libreria-vitreaux",  "destination": "/libreria-vitreaux.html" },
     { "source": "/404",                "destination": "/404.html" }
+    { "source": "/:slug", "destination": "/tienda.html" }
   ]
 }
