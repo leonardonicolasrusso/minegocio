@@ -562,7 +562,13 @@ tbody td {
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+// ── SUPABASE ──
+const SUPA_URL = 'https://mbeplryehybxsifkltod.supabase.co';
+const SUPA_KEY = 'sb_publishable_mOqt9UcDHLg9J0ZfV1KTEw_XJ6CR0kE';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
 const ADMIN = { email: 'admin@minegocio.com.ar', pass: 'admin2025' };
 
 const today = new Date();
@@ -572,15 +578,7 @@ const d = (offset) => {
   return d.toISOString().split('T')[0];
 };
 
-let stores = [
-  { id: 1, name: 'JAE Accesorios',      owner: 'Jorge Acevedo',    plan: 'basico', status: 'active',  wa: '3415550001', expiry: d(18),  clicks: 47,  income: 3000 },
-  { id: 2, name: 'Librería Vitreaux',   owner: 'Ana Benítez',      plan: 'pro',    status: 'active',  wa: '3415550002', expiry: d(25),  clicks: 132, income: 5000 },
-  { id: 3, name: 'Dietética Natureza',  owner: 'Laura Montes',     plan: 'pro',    status: 'trial',   wa: '3415550003', expiry: d(12),  clicks: 23,  income: 0    },
-  { id: 4, name: 'Kiosco El Farol',     owner: 'Raúl Soto',        plan: 'basico', status: 'trial',   wa: '3415550004', expiry: d(5),   clicks: 8,   income: 0    },
-  { id: 5, name: 'Perfumería Bloom',    owner: 'Carla Ríos',       plan: 'pro',    status: 'expiring', wa: '3415550005', expiry: d(3),  clicks: 61,  income: 5000 },
-  { id: 6, name: 'Ferretería Central',  owner: 'Pablo Giménez',    plan: 'basico', status: 'blocked', wa: '3415550006', expiry: d(-8), clicks: 19,  income: 0    },
-  { id: 7, name: 'Rotisería Don Tito',  owner: 'Tito Alvarado',    plan: 'basico', status: 'blocked', wa: '3415550007', expiry: d(-15), clicks: 5,  income: 0    },
-];
+let stores = [];
 
 let activeFilter = 'all';
 let modalAction = null;
@@ -608,9 +606,17 @@ function doLogout() {
 }
 
 // ── DASHBOARD ──
-function showDashboard() {
+async function showDashboard() {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-dashboard').classList.add('active');
+  await loadStores();
+}
+
+async function loadStores() {
+  document.getElementById('stores-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--ink-soft)">Cargando...</td></tr>';
+  const { data, error } = await sb.from('stores').select('*').order('created_at', { ascending: false });
+  if (error) { showToast('Error al cargar tiendas'); console.error(error); return; }
+  stores = data || [];
   updateMetrics();
   renderTable(activeFilter);
 }
@@ -731,25 +737,24 @@ function filterTable(filter, btn) {
 }
 
 // ── ACCIONES ──
-function blockStore(id) {
+async function blockStore(id) {
   const s = stores.find(s => s.id === id);
   if (!s) return;
   if (!confirm(`¿Bloquear "${s.name}"? No podrá acceder a su panel.`)) return;
-  s.status = 'blocked';
-  s.income = 0;
-  updateMetrics();
-  renderTable(activeFilter);
+  const { error } = await sb.from('stores').update({ status: 'blocked', income: 0 }).eq('id', id);
+  if (error) { showToast('Error al bloquear'); return; }
+  await loadStores();
   showToast(`${s.name} bloqueada`);
 }
 
-function activateStore(id) {
+async function activateStore(id) {
   const s = stores.find(s => s.id === id);
   if (!s) return;
-  s.status = 'active';
-  s.expiry = d(30);
-  s.income = s.plan === 'pro' ? 5000 : 3000;
-  updateMetrics();
-  renderTable(activeFilter);
+  const newExpiry = d(30);
+  const newIncome = s.plan === 'pro' ? 5000 : 3000;
+  const { error } = await sb.from('stores').update({ status: 'active', expiry: newExpiry, income: newIncome }).eq('id', id);
+  if (error) { showToast('Error al activar'); return; }
+  await loadStores();
   if (detailStoreId === id) openDetail(id);
   showToast(`${s.name} activada — vence en 30 días`);
 }
@@ -782,7 +787,7 @@ function closeNueva(e) {
   document.getElementById('modal-nueva').classList.remove('visible');
 }
 
-function saveNueva() {
+async function saveNueva() {
   const nombre  = document.getElementById('n-nombre').value.trim();
   const dueno   = document.getElementById('n-dueno').value.trim();
   const wa      = document.getElementById('n-wa').value.trim();
@@ -801,36 +806,39 @@ function saveNueva() {
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-  const isTrial  = periodo > 0;
+  const isTrial = periodo > 0;
   const newStore = {
-    id:     stores.length ? Math.max(...stores.map(s => s.id)) + 1 : 1,
-    name:   nombre,
-    owner:  dueno,
-    plan,
-    rubro,
-    email,
-    pass,
-    status: isTrial ? 'trial' : 'active',
-    wa,
-    expiry: d(periodo || 30),
-    clicks: 0,
-    income: isTrial ? 0 : (plan === 'pro' ? 5000 : 3000),
+    name:        nombre,
+    owner:       dueno,
     slug,
+    rubro,
+    wa,
+    email,
+    password:    pass,
+    plan,
+    status:      isTrial ? 'trial' : 'active',
+    expiry:      d(periodo || 30),
+    wa_clicks:   0,
+    income:      isTrial ? 0 : (plan === 'pro' ? 5000 : 3000),
   };
 
-  stores.unshift(newStore);
+  const { error } = await sb.from('stores').insert([newStore]);
+  if (error) {
+    alert('Error al crear la tienda: ' + error.message);
+    return;
+  }
+
   document.getElementById('modal-nueva').classList.remove('visible');
-  updateMetrics();
-  renderTable(activeFilter);
+  await loadStores();
 
   const planLabel = plan === 'pro' ? 'Pro ($5.000/mes)' : 'Básico ($3.000/mes)';
   const msg = encodeURIComponent(
-    `¡Hola ${dueno}! 🎉 Tu tienda en *minegocio.com.ar* ya está lista.\n\n` +
+    `¡Hola ${dueno}! 🎉 Tu tienda en *minegocio1.vercel.app* ya está lista.\n\n` +
     `🏪 *${nombre}*\n\n` +
     `🔗 *Tu tienda pública* (para compartir con tus clientes):\n` +
-    `minegocio.com.ar/${slug}\n\n` +
+    `minegocio1.vercel.app/${slug}\n\n` +
     `⚙️ *Tu Panel Tienda* (para cargar y gestionar productos):\n` +
-    `minegocio.com.ar/panel-tienda\n\n` +
+    `minegocio1.vercel.app/panel-tienda\n\n` +
     `📧 Email de acceso: ${email}\n` +
     `🔑 Contraseña: ${pass}\n` +
     `📦 Plan: ${planLabel}\n` +
@@ -838,7 +846,7 @@ function saveNueva() {
     `\nEntrá al panel, cargá tus productos y compartí el link de tu tienda. ¡Cualquier duda estoy acá!`
   );
 
-  showToast(`Tienda "${nombre}" creada`);
+  showToast(`Tienda "${nombre}" creada en Supabase ✓`);
   setTimeout(() => {
     window.open(`https://wa.me/54${wa.replace(/\D/g,'')}?text=${msg}`, '_blank');
   }, 800);
@@ -850,20 +858,21 @@ function closeModal(e) {
   modalAction = null; modalStoreId = null;
 }
 
-function saveModal() {
+async function saveModal() {
   const newDate = document.getElementById('modal-date').value;
   if (!newDate) { alert('Elegí una fecha.'); return; }
 
   if (modalAction === 'extend') {
     const s = stores.find(s => s.id === modalStoreId);
-    s.expiry = newDate;
-    if (isBlocked(s)) { s.status = 'active'; s.income = s.plan === 'pro' ? 5000 : 3000; }
-    showToast(`Vencimiento extendido para ${s.name}`);
+    const updates = { expiry: newDate };
+    if (isBlocked(s)) { updates.status = 'active'; updates.income = s.plan === 'pro' ? 5000 : 3000; }
+    const { error } = await sb.from('stores').update(updates).eq('id', modalStoreId);
+    if (error) { showToast('Error al guardar'); return; }
+    showToast(`Vencimiento extendido`);
   }
 
   document.getElementById('modal-overlay').classList.remove('visible');
-  updateMetrics();
-  renderTable(activeFilter);
+  await loadStores();
   if (detailStoreId === modalStoreId) openDetail(modalStoreId);
   modalAction = null; modalStoreId = null;
 }
