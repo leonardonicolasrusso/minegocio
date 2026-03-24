@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Tienda — minegocio.com.ar</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #141210;
+  --ink-soft: #6b6560;
+  --cream: #faf8f4;
+  --cream-dark: #f0ece4;
+  --surface: #ffffff;
+  --accent: #d4522a;
+  --accent-soft: #fbeee9;
+  --wa: #25D366;
+  --wa-dark: #1aab52;
+  --border: rgba(20,18,16,0.1);
+  --danger: #c0392b;
+  --danger-soft: #fdf0ef;
+  --r: 14px;
+  --r-sm: 8px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { height: 100%; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ══════════════════════
+   LOGIN
+══════════════════════ */
+#screen-login {
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  padding: 40px 36px;
+  animation: fadeUp .5s ease both;
+}
+
+.login-logo {
+  font-family: 'Instrument Serif', serif;
+  font-size: 26px;
+  text-align: center;
+  margin-bottom: 6px;
+}
+.login-logo span { color: var(--accent); }
+
+.login-sub {
+  text-align: center;
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin-bottom: 32px;
+}
+
+.field { margin-bottom: 14px; }
+
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+.field input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--cream);
+  outline: none;
+  transition: border-color .2s;
+}
+.field input:focus { border-color: var(--ink); background: white; }
+
+.btn-login {
+  width: 100%;
+  padding: 14px;
+  background: var(--ink);
+  color: var(--cream);
+  border: none;
+  border-radius: 100px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: opacity .2s, transform .2s;
+}
+.btn-login:hover { opacity: .85; transform: translateY(-1px); }
+
+.login-error {
+  display: none;
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 13px;
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  margin-top: 12px;
+  text-align: center;
+}
+.login-error.visible { display: block; }
+
+.login-hint {
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 20px;
+}
+
+/* ══════════════════════
+   TOPBAR (compartida)
+══════════════════════ */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 50;
+}
+
+.topbar-logo {
+  font-family: 'Instrument Serif', serif;
+  font-size: 20px;
+  color: var(--ink);
+}
+.topbar-logo span { color: var(--accent); }
+
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+
+.topbar-store {
+  font-size: 13px;
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+
+.topbar-store strong { color: var(--ink); font-weight: 500; }
+
+.btn-back {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  background: transparent;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-back:hover { background: var(--cream-dark); }
+
+.btn-logout {
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  background: transparent;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background .2s;
+}
+.btn-logout:hover { background: var(--cream-dark); }
+
+/* ══════════════════════
+   DASHBOARD
+══════════════════════ */
+#screen-dashboard .content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 24px;
+  max-width: 520px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.dash-greeting {
+  text-align: center;
+  margin-bottom: 36px;
+  animation: fadeUp .4s ease both;
+}
+
+.dash-greeting h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 32px;
+  margin-bottom: 6px;
+}
+
+.dash-greeting p {
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+
+.dash-link-box {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 32px;
+  animation: fadeUp .4s .1s ease both;
+}
+
+.dash-link-label { font-size: 12px; color: var(--ink-soft); margin-bottom: 4px; }
+.dash-link-url { font-size: 14px; font-weight: 500; color: var(--accent); }
+
+.btn-copy {
+  padding: 8px 16px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: none;
+  border-radius: 100px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.btn-copy:hover { background: #f5d5c8; }
+.btn-copy.copied { background: #edf7f1; color: var(--wa-dark); }
+
+.dash-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.action-card {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 22px 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  cursor: pointer;
+  transition: border-color .2s, transform .2s, box-shadow .2s;
+  text-align: left;
+  animation: fadeUp .4s ease both;
+}
+
+.action-card:nth-child(1) { animation-delay: .15s; }
+.action-card:nth-child(2) { animation-delay: .22s; }
+.action-card:nth-child(3) { animation-delay: .29s; }
+
+.action-card:hover {
+  border-color: rgba(20,18,16,.25);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(20,18,16,.08);
+}
+
+.action-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.icon-datos { background: #eef3fb; }
+.icon-productos { background: #edf7f1; }
+.icon-agregar { background: var(--accent-soft); }
+.icon-password { background: #f5f0fb; }
+.icon-clave { background: #f5f0fb; }
+
+.action-info { flex: 1; }
+.action-title { font-size: 17px; font-weight: 500; margin-bottom: 3px; }
+.action-desc { font-size: 13px; color: var(--ink-soft); }
+
+.action-arrow {
+  font-size: 20px;
+  color: var(--ink-soft);
+  transition: transform .2s;
+}
+.action-card:hover .action-arrow { transform: translateX(4px); }
+
+/* ══════════════════════
+   SECCIONES INTERIORES
+══════════════════════ */
+.inner-content {
+  flex: 1;
+  padding: 32px 24px;
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  animation: fadeUp .35s ease both;
+}
+
+.inner-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+
+.inner-sub {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin-bottom: 28px;
+}
+
+/* ── FORM FIELDS ── */
+.form-field { margin-bottom: 16px; }
+
+.form-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+.form-field input,
+.form-field textarea,
+.form-field select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--surface);
+  outline: none;
+  transition: border-color .2s;
+}
+
+.form-field input:focus,
+.form-field textarea:focus,
+.form-field select:focus { border-color: var(--ink); }
+
+.form-field textarea { resize: vertical; min-height: 80px; }
+
+.btn-save {
+  width: 100%;
+  padding: 14px;
+  background: var(--ink);
+  color: var(--cream);
+  border: none;
+  border-radius: 100px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: opacity .2s, transform .2s;
+}
+.btn-save:hover { opacity: .85; transform: translateY(-1px); }
+
+.save-ok {
+  display: none;
+  text-align: center;
+  font-size: 14px;
+  color: var(--wa-dark);
+  margin-top: 12px;
+  font-weight: 500;
+}
+.save-ok.visible { display: block; }
+
+/* ── FOTO UPLOAD ── */
+.photo-upload {
+  border: 2px dashed var(--border);
+  border-radius: var(--r);
+  padding: 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  position: relative;
+  overflow: hidden;
+}
+.photo-upload:hover { border-color: var(--accent); background: var(--accent-soft); }
+.photo-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.photo-upload-icon { font-size: 32px; margin-bottom: 8px; }
+.photo-upload-text { font-size: 14px; color: var(--ink-soft); }
+.photo-upload-text strong { color: var(--accent); }
+.photo-preview {
+  width: 100%; max-height: 180px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  display: none;
+  margin-top: 12px;
+}
+
+/* ── LISTA PRODUCTOS ── */
+.products-list { display: flex; flex-direction: column; gap: 12px; }
+
+.product-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: border-color .2s;
+}
+.product-item:hover { border-color: rgba(20,18,16,.2); }
+
+.product-thumb {
+  width: 56px; height: 56px;
+  border-radius: var(--r-sm);
+  object-fit: cover;
+  background: var(--cream-dark);
+  flex-shrink: 0;
+}
+
+.product-info { flex: 1; min-width: 0; }
+.product-name { font-size: 15px; font-weight: 500; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.product-price { font-size: 14px; color: var(--ink-soft); }
+
+.product-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.btn-edit, .btn-delete {
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: background .2s;
+}
+
+.btn-edit { background: transparent; color: var(--ink-soft); }
+.btn-edit:hover { background: var(--cream-dark); }
+
+.btn-delete { background: transparent; color: var(--danger); border-color: rgba(192,57,43,.2); }
+.btn-delete:hover { background: var(--danger-soft); }
+
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--ink-soft);
+}
+.empty-state-icon { font-size: 40px; margin-bottom: 12px; }
+.empty-state p { font-size: 15px; }
+
+/* ── PLAN BADGE ── */
+.plan-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 24px;
+}
+.plan-basic { background: var(--cream-dark); color: var(--ink-soft); }
+.plan-pro { background: var(--ink); color: var(--cream); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 480px) {
+  .login-box { padding: 32px 24px; }
+  .topbar { padding: 14px 16px; }
+  .topbar-store { display: none; }
+  .inner-content { padding: 24px 16px; }
+  .product-actions { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════
+     SCREEN 1: LOGIN
+══════════════════════════════ -->
+<div class="screen active" id="screen-login">
+  <div class="login-box">
+    <div class="login-logo">mi<span>negocio</span>.com.ar</div>
+    <div class="login-sub">Panel Tienda</div>
+
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="tunegocio@email.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+
+    <button class="btn-login" onclick="doLogin()">Ingresar a mi panel</button>
+    <div class="login-error" id="login-error">Email o contraseña incorrectos. Intentá de nuevo.</div>
+
+    <p class="login-hint">¿Problemas para ingresar? Escribinos por WhatsApp.</p>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════
+     SCREEN 2: DASHBOARD
+══════════════════════════════ -->
+<div class="screen" id="screen-dashboard">
+
+  <div class="topbar">
+    <div class="topbar-logo">mi<span>negocio</span>.com.ar</div>
+    <div class="topbar-right">
+      <div class="topbar-store">Hola, <strong id="store-name-display">tu negocio</strong></div>
+      <button class="btn-logout" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="dash-greeting">
+      <h2>¿Qué hacemos hoy?</h2>
+      <p>Elegí una opción para empezar</p>
+    </div>
+
+    <div class="dash-link-box">
+      <div>
+        <div class="dash-link-label">Tu link público</div>
+        <div class="dash-link-url" id="store-link-display">minegocio.com.ar/tu-tienda</div>
+      </div>
+      <button class="btn-copy" id="copy-btn" onclick="copyLink()">Copiar</button>
+    </div>
+
+    <div class="dash-actions">
+      <div class="action-card" onclick="goTo('datos')">
+        <div class="action-icon icon-datos">🏪</div>
+        <div class="action-info">
+          <div class="action-title">Datos de mi negocio</div>
+          <div class="action-desc">Nombre, rubro, WhatsApp, descripción</div>
+        </div>
+        <div class="action-arrow">→</div>
+      </div>
+
+      <div class="action-card" onclick="goTo('productos')">
+        <div class="action-icon icon-productos">📦</div>
+        <div class="action-info">
+          <div class="action-title">Ver mis productos</div>
+          <div class="action-desc" id="products-count-desc">Editá o eliminá los que ya cargaste</div>
+        </div>
+        <div class="action-arrow">→</div>
+      </div>
+
+      <div class="action-card" onclick="goTo('agregar')">
+        <div class="action-icon icon-agregar">➕</div>
+        <div class="action-info">
+          <div class="action-title">Agregar producto</div>
+          <div class="action-desc">Foto, nombre y precio</div>
+        </div>
+        <div class="action-arrow">→</div>
+      </div>
+
+      <div class="action-card" onclick="goTo('password')">
+        <div class="action-icon icon-password">🔑</div>
+        <div class="action-info">
+          <div class="action-title">Cambiar contraseña</div>
+          <div class="action-desc">Actualizá tu clave de acceso</div>
+        </div>
+        <div class="action-arrow">→</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════
+     SCREEN 3: DATOS DEL NEGOCIO
+══════════════════════════════ -->
+<div class="screen" id="screen-datos">
+
+  <div class="topbar">
+    <button class="btn-back" onclick="goTo('dashboard')">← Volver</button>
+    <div class="topbar-logo">mi<span>negocio</span>.com.ar</div>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+
+  <div class="inner-content">
+    <div class="inner-title">Datos de mi negocio</div>
+    <div class="inner-sub">Esta info aparece en tu página pública.</div>
+
+    <div class="form-field">
+      <label>Nombre del negocio</label>
+      <input type="text" id="d-nombre" placeholder="Ej: Kiosco Don Pedro">
+    </div>
+    <div class="form-field">
+      <label>Rubro</label>
+      <select id="d-rubro">
+        <option value="">Elegí un rubro</option>
+        <option>Kiosco</option>
+        <option>Dietética</option>
+        <option>Librería</option>
+        <option>Electrónica</option>
+        <option>Perfumería</option>
+        <option>Rotisería</option>
+        <option>Indumentaria</option>
+        <option>Ferretería</option>
+        <option>Repostería</option>
+        <option>Otro</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Descripción corta</label>
+      <textarea id="d-descripcion" placeholder="Ej: Todo para el hogar. Envíos a domicilio en Rosario."></textarea>
+    </div>
+    <div class="form-field">
+      <label>WhatsApp (con código de área)</label>
+      <input type="tel" id="d-whatsapp" placeholder="Ej: 341 5550000">
+    </div>
+    <div class="form-field">
+      <label>Zona / Ciudad</label>
+      <input type="text" id="d-zona" placeholder="Ej: Rosario, Santa Fe">
+    </div>
+    <div class="form-field">
+      <label>Medios de pago</label>
+      <input type="text" id="d-pagos" placeholder="Ej: Efectivo, Transferencia, MercadoPago">
+    </div>
+
+    <button class="btn-save" onclick="saveDatos()">Guardar cambios</button>
+    <div class="save-ok" id="datos-ok">✓ Datos guardados correctamente</div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════
+     SCREEN 4: VER PRODUCTOS
+══════════════════════════════ -->
+<div class="screen" id="screen-productos">
+
+  <div class="topbar">
+    <button class="btn-back" onclick="goTo('dashboard')">← Volver</button>
+    <div class="topbar-logo">mi<span>negocio</span>.com.ar</div>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+
+  <div class="inner-content">
+    <div class="inner-title">Mis productos</div>
+    <div class="inner-sub" id="productos-sub">Tocá Editar para modificar o Eliminar para borrar.</div>
+    <div class="products-list" id="products-list"></div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════
+     SCREEN 5: AGREGAR PRODUCTO
+══════════════════════════════ -->
+<div class="screen" id="screen-agregar">
+
+  <div class="topbar">
+    <button class="btn-back" onclick="goTo('dashboard')">← Volver</button>
+    <div class="topbar-logo">mi<span>negocio</span>.com.ar</div>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+
+  <div class="inner-content">
+    <div class="inner-title" id="agregar-title">Agregar producto</div>
+    <div class="inner-sub">Completá los datos y guardá.</div>
+
+    <div class="form-field">
+      <label>Foto del producto</label>
+      <div class="photo-upload" id="photo-drop">
+        <input type="file" accept="image/*" onchange="previewPhoto(this)">
+        <div class="photo-upload-icon">📷</div>
+        <div class="photo-upload-text">Tocá para elegir una foto<br><strong>o arrastrala acá</strong></div>
+        <img class="photo-preview" id="photo-preview" src="" alt="">
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label>Nombre del producto</label>
+      <input type="text" id="p-nombre" placeholder="Ej: Control Remoto Universal">
+    </div>
+    <div class="form-field">
+      <label>Descripción (opcional)</label>
+      <input type="text" id="p-desc" placeholder="Ej: Compatible con Samsung, LG y más">
+    </div>
+    <div class="form-field">
+      <label>Precio ($)</label>
+      <input type="number" id="p-precio" placeholder="Ej: 4800" min="0">
+    </div>
+
+    <button class="btn-save" onclick="saveProduct()">Guardar producto</button>
+    <div class="save-ok" id="product-ok">✓ Producto guardado</div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════
+     SCREEN 6: CAMBIAR CONTRASEÑA
+══════════════════════════════ -->
+<div class="screen" id="screen-password">
+
+  <div class="topbar">
+    <button class="btn-back" onclick="goTo('dashboard')">← Volver</button>
+    <div class="topbar-logo">mi<span>negocio</span>.com.ar</div>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+
+  <div class="inner-content">
+    <div class="inner-title">Cambiar contraseña</div>
+    <div class="inner-sub">Por tu seguridad, usá una contraseña que no uses en otros sitios.</div>
+
+    <div class="form-field">
+      <label>Contraseña actual</label>
+      <input type="password" id="pass-actual" placeholder="••••••••">
+    </div>
+    <div class="form-field">
+      <label>Nueva contraseña</label>
+      <input type="password" id="pass-nueva" placeholder="Mínimo 6 caracteres">
+    </div>
+    <div class="form-field">
+      <label>Repetir nueva contraseña</label>
+      <input type="password" id="pass-repetir" placeholder="Igual a la anterior">
+    </div>
+
+    <div id="pass-error" style="display:none;background:var(--danger-soft);color:var(--danger);font-size:13px;padding:10px 14px;border-radius:8px;margin-bottom:12px;"></div>
+
+    <button class="btn-save" onclick="changePassword()">Actualizar contraseña</button>
+    <div class="save-ok" id="pass-ok">✓ Contraseña actualizada correctamente</div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════
+// ESTADO
+// ══════════════════════════════════════
+const DEMO_USER = { email: 'demo@minegocio.com', pass: '123456', store: 'JAE Accesorios', slug: 'jae-accesorios' };
+
+let state = {
+  loggedIn: false,
+  storeName: '',
+  storeSlug: '',
+  editingId: null,
+  products: [
+    { id: 1, name: 'Control Remoto Universal', desc: 'Compatible con Samsung, LG y más', price: 4800, photo: 'https://images.unsplash.com/photo-1593359677879-a4bb92f4834c?w=200&q=80' },
+    { id: 2, name: 'Control Smart TV', desc: 'Netflix, YouTube incluidos', price: 6200, photo: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200&q=80' },
+    { id: 3, name: 'Cargador USB-C 20W', desc: 'Carga rápida, incluye cable', price: 7500, photo: 'https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=200&q=80' },
+  ],
+  datos: { nombre: 'JAE Accesorios', rubro: 'Electrónica', descripcion: 'Controles remotos y cargadores. Envíos a todo el país.', whatsapp: '341 5550000', zona: 'Rosario, Santa Fe', pagos: 'Transferencia, Efectivo' },
+  nextId: 4,
+  pendingPhoto: null,
+};
+
+// ══════════════════════════════════════
+// NAVEGACIÓN
+// ══════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goTo(section) {
+  if (section === 'dashboard') {
+    updateDashboard();
+    showScreen('dashboard');
+  } else if (section === 'datos') {
+    loadDatosForm();
+    showScreen('datos');
+  } else if (section === 'productos') {
+    renderProducts();
+    showScreen('productos');
+  } else if (section === 'agregar') {
+    resetAgregarForm();
+    showScreen('agregar');
+  } else if (section === 'password') {
+    document.getElementById('pass-actual').value = '';
+    document.getElementById('pass-nueva').value = '';
+    document.getElementById('pass-repetir').value = '';
+    document.getElementById('pass-error').style.display = 'none';
+    document.getElementById('pass-ok').classList.remove('visible');
+    showScreen('password');
+  }
+}
+
+// ══════════════════════════════════════
+// LOGIN / LOGOUT
+// ══════════════════════════════════════
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const err   = document.getElementById('login-error');
+
+  if (email === DEMO_USER.email && pass === DEMO_USER.pass) {
+    state.loggedIn = true;
+    state.storeName = DEMO_USER.store;
+    state.storeSlug = DEMO_USER.slug;
+    err.classList.remove('visible');
+    updateDashboard();
+    showScreen('dashboard');
+  } else {
+    err.classList.add('visible');
+    document.getElementById('login-pass').value = '';
+  }
+}
+
+function doLogout() {
+  state.loggedIn = false;
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-pass').value = '';
+  showScreen('login');
+}
+
+// ══════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════
+function updateDashboard() {
+  document.getElementById('store-name-display').textContent = state.storeName;
+  document.getElementById('store-link-display').textContent = 'minegocio.com.ar/' + state.storeSlug;
+  const count = state.products.length;
+  document.getElementById('products-count-desc').textContent =
+    count === 0 ? 'Todavía no tenés productos cargados' :
+    count === 1 ? '1 producto cargado' :
+    count + ' productos cargados';
+}
+
+function copyLink() {
+  const link = 'https://minegocio.com.ar/' + state.storeSlug;
+  navigator.clipboard.writeText(link).catch(() => {});
+  const btn = document.getElementById('copy-btn');
+  btn.textContent = '✓ Copiado';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+}
+
+// ══════════════════════════════════════
+// DATOS DEL NEGOCIO
+// ══════════════════════════════════════
+function loadDatosForm() {
+  const d = state.datos;
+  document.getElementById('d-nombre').value      = d.nombre || '';
+  document.getElementById('d-rubro').value        = d.rubro || '';
+  document.getElementById('d-descripcion').value  = d.descripcion || '';
+  document.getElementById('d-whatsapp').value     = d.whatsapp || '';
+  document.getElementById('d-zona').value         = d.zona || '';
+  document.getElementById('d-pagos').value        = d.pagos || '';
+  document.getElementById('datos-ok').classList.remove('visible');
+}
+
+function saveDatos() {
+  state.datos = {
+    nombre:      document.getElementById('d-nombre').value,
+    rubro:       document.getElementById('d-rubro').value,
+    descripcion: document.getElementById('d-descripcion').value,
+    whatsapp:    document.getElementById('d-whatsapp').value,
+    zona:        document.getElementById('d-zona').value,
+    pagos:       document.getElementById('d-pagos').value,
+  };
+  state.storeName = state.datos.nombre || state.storeName;
+  document.getElementById('datos-ok').classList.add('visible');
+  setTimeout(() => document.getElementById('datos-ok').classList.remove('visible'), 2500);
+}
+
+// ══════════════════════════════════════
+// PRODUCTOS
+// ══════════════════════════════════════
+function renderProducts() {
+  const list = document.getElementById('products-list');
+  const sub  = document.getElementById('productos-sub');
+
+  if (state.products.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📦</div>
+        <p>Todavía no cargaste productos.<br>¡Agregá el primero!</p>
+      </div>`;
+    sub.textContent = '';
+    return;
+  }
+
+  sub.textContent = state.products.length + ' producto' + (state.products.length !== 1 ? 's' : '') + ' cargado' + (state.products.length !== 1 ? 's' : '') + '. Tocá Editar o Eliminar.';
+
+  list.innerHTML = state.products.map(p => `
+    <div class="product-item" id="pitem-${p.id}">
+      <img class="product-thumb" src="${p.photo || ''}" alt="${p.name}"
+        onerror="this.style.background='#f0ece4';this.src=''">
+      <div class="product-info">
+        <div class="product-name">${p.name}</div>
+        <div class="product-price">$${Number(p.price).toLocaleString('es-AR')}</div>
+      </div>
+      <div class="product-actions">
+        <button class="btn-edit" onclick="editProduct(${p.id})">Editar</button>
+        <button class="btn-delete" onclick="deleteProduct(${p.id})">Eliminar</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function deleteProduct(id) {
+  if (!confirm('¿Eliminar este producto?')) return;
+  state.products = state.products.filter(p => p.id !== id);
+  renderProducts();
+  updateDashboard();
+}
+
+function editProduct(id) {
+  const p = state.products.find(p => p.id === id);
+  if (!p) return;
+  state.editingId = id;
+  state.pendingPhoto = p.photo;
+
+  document.getElementById('agregar-title').textContent = 'Editar producto';
+  document.getElementById('p-nombre').value = p.name;
+  document.getElementById('p-desc').value   = p.desc || '';
+  document.getElementById('p-precio').value = p.price;
+
+  const preview = document.getElementById('photo-preview');
+  if (p.photo) {
+    preview.src = p.photo;
+    preview.style.display = 'block';
+  }
+  document.getElementById('product-ok').classList.remove('visible');
+  showScreen('agregar');
+}
+
+function resetAgregarForm() {
+  state.editingId = null;
+  state.pendingPhoto = null;
+  document.getElementById('agregar-title').textContent = 'Agregar producto';
+  document.getElementById('p-nombre').value = '';
+  document.getElementById('p-desc').value   = '';
+  document.getElementById('p-precio').value = '';
+  document.getElementById('photo-preview').style.display = 'none';
+  document.getElementById('photo-preview').src = '';
+  document.getElementById('product-ok').classList.remove('visible');
+}
+
+function saveProduct() {
+  const name  = document.getElementById('p-nombre').value.trim();
+  const desc  = document.getElementById('p-desc').value.trim();
+  const price = document.getElementById('p-precio').value;
+
+  if (!name || !price) {
+    alert('Completá al menos el nombre y el precio.');
+    return;
+  }
+
+  if (state.editingId) {
+    const idx = state.products.findIndex(p => p.id === state.editingId);
+    if (idx >= 0) {
+      state.products[idx] = { ...state.products[idx], name, desc, price: Number(price), photo: state.pendingPhoto || state.products[idx].photo };
+    }
+    state.editingId = null;
+  } else {
+    state.products.push({
+      id: state.nextId++,
+      name, desc,
+      price: Number(price),
+      photo: state.pendingPhoto || '',
+    });
+  }
+
+  state.pendingPhoto = null;
+  document.getElementById('product-ok').classList.add('visible');
+  updateDashboard();
+
+  setTimeout(() => {
+    document.getElementById('product-ok').classList.remove('visible');
+    resetAgregarForm();
+    goTo('dashboard');
+  }, 1200);
+}
+
+// ══════════════════════════════════════
+// FOTO
+// ══════════════════════════════════════
+function previewPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById('photo-preview');
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+    state.pendingPhoto = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ══════════════════════════════════════
+// CAMBIAR CONTRASEÑA
+// ══════════════════════════════════════
+function changePassword() {
+  const actual   = document.getElementById('pass-actual').value;
+  const nueva    = document.getElementById('pass-nueva').value;
+  const repetir  = document.getElementById('pass-repetir').value;
+  const errEl    = document.getElementById('pass-error');
+
+  errEl.style.display = 'none';
+
+  if (!actual || !nueva || !repetir) {
+    errEl.textContent = 'Completá todos los campos.';
+    errEl.style.display = 'block'; return;
+  }
+  if (actual !== DEMO_USER.pass) {
+    errEl.textContent = 'La contraseña actual es incorrecta.';
+    errEl.style.display = 'block'; return;
+  }
+  if (nueva.length < 6) {
+    errEl.textContent = 'La nueva contraseña debe tener al menos 6 caracteres.';
+    errEl.style.display = 'block'; return;
+  }
+  if (nueva !== repetir) {
+    errEl.textContent = 'Las contraseñas nuevas no coinciden.';
+    errEl.style.display = 'block'; return;
+  }
+
+  DEMO_USER.pass = nueva;
+  document.getElementById('pass-actual').value  = '';
+  document.getElementById('pass-nueva').value   = '';
+  document.getElementById('pass-repetir').value = '';
+  document.getElementById('pass-ok').classList.add('visible');
+  setTimeout(() => {
+    document.getElementById('pass-ok').classList.remove('visible');
+    goTo('dashboard');
+  }, 1800);
+}
+</script>
+</body>
+</html>

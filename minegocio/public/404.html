@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Página no encontrada — minegocio.com.ar</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #141210;
+  --ink-soft: #6b6560;
+  --cream: #faf8f4;
+  --cream-dark: #f0ece4;
+  --surface: #ffffff;
+  --accent: #d4522a;
+  --accent-soft: #fbeee9;
+  --border: rgba(20,18,16,0.1);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── NAV ── */
+nav {
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.nav-logo {
+  font-family: 'Instrument Serif', serif;
+  font-size: 22px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.nav-logo span { color: var(--accent); }
+
+/* ── DEMO SWITCHER ── */
+.demo-bar {
+  background: var(--ink);
+  color: rgba(250,248,244,.7);
+  text-align: center;
+  padding: 10px 20px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.demo-btn {
+  padding: 5px 14px;
+  border-radius: 100px;
+  border: 1px solid rgba(250,248,244,.2);
+  background: transparent;
+  color: rgba(250,248,244,.8);
+  font-family: 'Outfit', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background .2s;
+}
+.demo-btn.active { background: rgba(250,248,244,.15); color: white; border-color: rgba(250,248,244,.4); }
+.demo-btn:hover { background: rgba(250,248,244,.1); }
+
+/* ── PAGES ── */
+.page { display: none; flex: 1; }
+.page.active { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 24px; }
+
+/* ── SHARED ── */
+.error-box {
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+}
+
+.error-visual {
+  margin: 0 auto 32px;
+  position: relative;
+  width: 120px; height: 120px;
+}
+
+.error-circle {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 52px;
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+
+.error-num {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(80px, 20vw, 120px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--cream-dark);
+  margin-bottom: 0;
+  animation: fadeUp .5s ease both;
+}
+
+.error-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(26px, 6vw, 38px);
+  line-height: 1.1;
+  margin-bottom: 14px;
+  animation: fadeUp .5s .1s ease both;
+}
+
+.error-desc {
+  font-size: 16px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  font-weight: 300;
+  margin-bottom: 36px;
+  animation: fadeUp .5s .2s ease both;
+}
+
+.error-actions {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  animation: fadeUp .5s .3s ease both;
+}
+
+.btn-primary {
+  padding: 13px 28px;
+  background: var(--ink);
+  color: var(--cream);
+  border-radius: 100px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px; font-weight: 500;
+  text-decoration: none;
+  border: none; cursor: pointer;
+  transition: opacity .2s, transform .2s;
+}
+.btn-primary:hover { opacity: .85; transform: translateY(-1px); }
+
+.btn-secondary {
+  padding: 13px 28px;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  text-decoration: none;
+  transition: background .2s;
+}
+.btn-secondary:hover { background: var(--cream-dark); }
+
+/* ── 404 SPECIFIC ── */
+.page-404 .error-circle { background: var(--cream-dark); }
+
+/* ── BLOCKED SPECIFIC ── */
+.page-blocked .error-circle { background: var(--accent-soft); }
+
+.store-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 14px; font-weight: 500;
+  margin-bottom: 28px;
+  animation: fadeUp .5s .05s ease both;
+}
+
+.store-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #e67e22;
+}
+
+.info-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 28px;
+  text-align: left;
+  animation: fadeUp .5s .25s ease both;
+}
+
+.info-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.info-row:last-child { border-bottom: none; }
+.info-icon { font-size: 18px; flex-shrink: 0; }
+.info-text { color: var(--ink-soft); }
+.info-text strong { color: var(--ink); font-weight: 500; }
+
+/* ── FOOTER ── */
+footer {
+  padding: 24px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-soft);
+  border-top: 1px solid var(--border);
+}
+
+footer a { color: var(--accent); text-decoration: none; font-weight: 500; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 480px) {
+  nav { padding: 16px 20px; }
+  .error-actions { flex-direction: column; align-items: center; }
+  .btn-primary, .btn-secondary { width: 100%; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#">mi<span>negocio</span>.com.ar</a>
+</nav>
+
+<!-- DEMO BAR -->
+<div class="demo-bar">
+  <span>Vista previa:</span>
+  <button class="demo-btn active" onclick="showPage('404', this)">Página no encontrada (404)</button>
+  <button class="demo-btn" onclick="showPage('blocked', this)">Tienda bloqueada</button>
+</div>
+
+<!-- ══════════════════════════════
+     PÁGINA 404
+══════════════════════════════ -->
+<div class="page page-404 active" id="page-404">
+  <div class="error-box">
+
+    <div class="error-num">404</div>
+
+    <h1 class="error-title">Esta página no existe</h1>
+    <p class="error-desc">
+      El link que seguiste no lleva a ninguna tienda.<br>
+      Puede que el nombre esté mal escrito o que la tienda haya cambiado su dirección.
+    </p>
+
+    <div class="error-actions">
+      <a href="#" class="btn-primary">Crear mi tienda gratis</a>
+      <a href="#" class="btn-secondary">Volver al inicio</a>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     TIENDA BLOQUEADA
+══════════════════════════════ -->
+<div class="page page-blocked" id="page-blocked">
+  <div class="error-box">
+
+    <div class="store-tag">
+      <div class="store-dot"></div>
+      JAE Accesorios
+    </div>
+
+    <div class="error-visual">
+      <div class="error-circle">🔒</div>
+    </div>
+
+    <h1 class="error-title">Esta tienda está<br>temporalmente inactiva</h1>
+    <p class="error-desc">
+      El negocio está resolviendo una situación interna.<br>
+      Podés contactarlos directamente para hacer tu consulta.
+    </p>
+
+    <div class="info-card">
+      <div class="info-row">
+        <div class="info-icon">📞</div>
+        <div class="info-text">Contactá al negocio en <strong>WhatsApp: 341 555-0001</strong></div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">⏱</div>
+        <div class="info-text">La tienda debería volver a estar activa <strong>pronto</strong></div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">🏪</div>
+        <div class="info-text">¿Querés tu propia tienda online? <strong>Es muy fácil</strong></div>
+      </div>
+    </div>
+
+    <div class="error-actions">
+      <a href="https://wa.me/5493415550001" target="_blank" class="btn-primary">Contactar por WhatsApp</a>
+      <a href="#" class="btn-secondary">Crear mi tienda</a>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  Powered by <a href="#">minegocio.com.ar</a> · Tu negocio online en minutos
+</footer>
+
+<script>
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.demo-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>

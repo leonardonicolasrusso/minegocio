@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — minegocio.com.ar</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #141210;
+  --ink-soft: #6b6560;
+  --cream: #faf8f4;
+  --cream-dark: #f0ece4;
+  --surface: #ffffff;
+  --border: rgba(20,18,16,0.1);
+  --accent: #d4522a;
+  --accent-soft: #fbeee9;
+  --wa: #25D366;
+  --wa-soft: #edf7f1;
+  --wa-dark: #1aab52;
+  --danger: #c0392b;
+  --danger-soft: #fdf0ef;
+  --warning: #e67e22;
+  --warning-soft: #fef5ec;
+  --blue: #2980b9;
+  --blue-soft: #eaf3fb;
+  --r: 12px;
+  --r-sm: 8px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+.screen { display: none; min-height: 100vh; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* ── LOGIN ── */
+#screen-login {
+  align-items: center; justify-content: center; padding: 32px 20px;
+}
+
+.login-box {
+  width: 100%; max-width: 380px;
+  background: var(--surface);
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  padding: 40px 36px;
+  animation: fadeUp .5s ease both;
+}
+
+.login-logo {
+  font-family: 'Instrument Serif', serif;
+  font-size: 24px; text-align: center; margin-bottom: 4px;
+}
+.login-logo span { color: var(--accent); }
+.login-eyebrow {
+  text-align: center; font-size: 12px; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--ink-soft); margin-bottom: 28px;
+}
+
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 13px; font-weight: 500; color: var(--ink-soft); margin-bottom: 6px; }
+.field input {
+  width: 100%; padding: 12px 16px;
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  font-family: 'Outfit', sans-serif; font-size: 15px; color: var(--ink);
+  background: var(--cream); outline: none; transition: border-color .2s;
+}
+.field input:focus { border-color: var(--ink); background: white; }
+
+.btn-main {
+  width: 100%; padding: 13px;
+  background: var(--ink); color: var(--cream);
+  border: none; border-radius: 100px;
+  font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 500;
+  cursor: pointer; margin-top: 6px;
+  transition: opacity .2s, transform .2s;
+}
+.btn-main:hover { opacity: .85; transform: translateY(-1px); }
+
+.login-error {
+  display: none; background: var(--danger-soft); color: var(--danger);
+  font-size: 13px; padding: 10px 14px; border-radius: var(--r-sm);
+  margin-top: 12px; text-align: center;
+}
+.login-error.visible { display: block; }
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 28px;
+  background: var(--ink);
+  color: var(--cream);
+  position: sticky; top: 0; z-index: 50;
+}
+
+.topbar-logo { font-family: 'Instrument Serif', serif; font-size: 20px; }
+.topbar-logo span { color: #e8956d; }
+.topbar-badge {
+  font-size: 11px; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; color: rgba(250,248,244,.5);
+  margin-left: 10px;
+}
+
+.btn-logout {
+  padding: 7px 16px; border: 1px solid rgba(250,248,244,.2);
+  border-radius: 100px; background: transparent; color: rgba(250,248,244,.7);
+  font-family: 'Outfit', sans-serif; font-size: 13px; cursor: pointer;
+  transition: background .2s;
+}
+.btn-logout:hover { background: rgba(250,248,244,.1); }
+
+/* ── MAIN LAYOUT ── */
+.admin-body { flex: 1; padding: 28px; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+/* ── METRICS ── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px 22px;
+  animation: fadeUp .4s ease both;
+}
+
+.metric-card:nth-child(1) { animation-delay: .05s; }
+.metric-card:nth-child(2) { animation-delay: .10s; }
+.metric-card:nth-child(3) { animation-delay: .15s; }
+.metric-card:nth-child(4) { animation-delay: .20s; }
+.metric-card:nth-child(5) { animation-delay: .25s; }
+
+.metric-icon { font-size: 22px; margin-bottom: 10px; }
+.metric-label { font-size: 12px; color: var(--ink-soft); font-weight: 500; margin-bottom: 4px; }
+.metric-value { font-family: 'Instrument Serif', serif; font-size: 36px; line-height: 1; color: var(--ink); }
+.metric-sub { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
+
+/* ── SECTION HEADER ── */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; gap: 12px; flex-wrap: wrap;
+}
+
+.section-title-sm {
+  font-size: 16px; font-weight: 500; color: var(--ink);
+}
+
+.filter-tabs { display: flex; gap: 6px; }
+.filter-tab {
+  padding: 6px 14px; border-radius: 100px;
+  border: 1px solid var(--border);
+  background: transparent; font-family: 'Outfit', sans-serif;
+  font-size: 13px; color: var(--ink-soft); cursor: pointer;
+  transition: all .2s;
+}
+.filter-tab.active { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+
+.btn-nueva-tienda {
+  padding: 8px 18px;
+  background: var(--accent); color: white;
+  border: none; border-radius: 100px;
+  font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: opacity .2s, transform .2s;
+  white-space: nowrap;
+}
+.btn-nueva-tienda:hover { opacity: .85; transform: translateY(-1px); }
+
+/* ── TABLE ── */
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  animation: fadeUp .4s .3s ease both;
+}
+
+table { width: 100%; border-collapse: collapse; }
+
+thead { background: var(--cream); }
+thead th {
+  padding: 12px 16px;
+  font-size: 11px; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--ink-soft);
+  text-align: left; white-space: nowrap;
+}
+
+tbody tr {
+  border-top: 1px solid var(--border);
+  transition: background .15s;
+}
+tbody tr:hover { background: var(--cream); }
+
+tbody td {
+  padding: 14px 16px;
+  font-size: 14px; color: var(--ink);
+  vertical-align: middle;
+}
+
+.store-name { font-weight: 500; }
+.store-owner { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 100px;
+  font-size: 11px; font-weight: 600;
+}
+.badge-active   { background: var(--wa-soft);      color: var(--wa-dark); }
+.badge-trial    { background: var(--blue-soft);     color: var(--blue); }
+.badge-blocked  { background: var(--danger-soft);   color: var(--danger); }
+.badge-expiring { background: var(--warning-soft);  color: var(--warning); }
+
+.badge::before {
+  content: '';
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor;
+}
+
+.plan-tag {
+  display: inline-block;
+  padding: 3px 9px; border-radius: 100px;
+  font-size: 11px; font-weight: 600;
+}
+.plan-basic { background: var(--cream-dark); color: var(--ink-soft); }
+.plan-pro   { background: var(--ink);        color: var(--cream); }
+
+/* ── EXPIRY ── */
+.expiry-normal  { color: var(--ink-soft); }
+.expiry-soon    { color: var(--warning); font-weight: 500; }
+.expiry-overdue { color: var(--danger);  font-weight: 500; }
+
+/* ── ACTIONS ── */
+.row-actions { display: flex; gap: 6px; align-items: center; }
+
+.btn-sm {
+  padding: 5px 12px; border-radius: 100px;
+  font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 500;
+  cursor: pointer; border: 1px solid var(--border); background: transparent;
+  transition: background .2s; white-space: nowrap;
+}
+.btn-sm:hover { background: var(--cream-dark); }
+.btn-sm.btn-danger { color: var(--danger); border-color: rgba(192,57,43,.2); }
+.btn-sm.btn-danger:hover { background: var(--danger-soft); }
+.btn-sm.btn-success { color: var(--wa-dark); border-color: rgba(26,171,82,.2); }
+.btn-sm.btn-success:hover { background: var(--wa-soft); }
+.btn-sm.btn-extend { color: var(--blue); border-color: rgba(41,128,185,.2); }
+.btn-sm.btn-extend:hover { background: var(--blue-soft); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(20,18,16,.5);
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.visible { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 32px;
+  width: 100%; max-width: 420px;
+  animation: fadeUp .3s ease both;
+}
+
+.modal-title { font-family: 'Instrument Serif', serif; font-size: 24px; margin-bottom: 6px; }
+.modal-sub { font-size: 14px; color: var(--ink-soft); margin-bottom: 24px; }
+
+.modal-field { margin-bottom: 14px; }
+.modal-field label { display: block; font-size: 13px; font-weight: 500; color: var(--ink-soft); margin-bottom: 6px; }
+.modal-field input, .modal-field select {
+  width: 100%; padding: 11px 14px;
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  font-family: 'Outfit', sans-serif; font-size: 14px; color: var(--ink);
+  background: var(--cream); outline: none; transition: border-color .2s;
+}
+.modal-field input:focus, .modal-field select:focus { border-color: var(--ink); }
+
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.btn-modal-cancel {
+  flex: 1; padding: 12px; border-radius: 100px;
+  border: 1px solid var(--border); background: transparent;
+  font-family: 'Outfit', sans-serif; font-size: 14px; cursor: pointer;
+  transition: background .2s;
+}
+.btn-modal-cancel:hover { background: var(--cream-dark); }
+.btn-modal-save {
+  flex: 1; padding: 12px; border-radius: 100px;
+  border: none; background: var(--ink); color: var(--cream);
+  font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: opacity .2s;
+}
+.btn-modal-save:hover { opacity: .85; }
+
+/* ── DETAIL PANEL ── */
+.detail-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(20,18,16,.5);
+  align-items: flex-start; justify-content: flex-end;
+}
+.detail-overlay.visible { display: flex; }
+
+.detail-panel {
+  background: var(--surface);
+  width: 100%; max-width: 380px;
+  min-height: 100vh;
+  padding: 28px 24px;
+  overflow-y: auto;
+  animation: slideIn .3s ease both;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+.detail-close {
+  display: flex; align-items: center; gap: 8px;
+  background: none; border: none; cursor: pointer;
+  font-family: 'Outfit', sans-serif; font-size: 14px; color: var(--ink-soft);
+  margin-bottom: 24px; padding: 0;
+}
+
+.detail-store-name { font-family: 'Instrument Serif', serif; font-size: 28px; margin-bottom: 4px; }
+.detail-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-row-label { color: var(--ink-soft); }
+.detail-row-value { font-weight: 500; text-align: right; }
+
+.detail-actions { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+.btn-detail {
+  width: 100%; padding: 12px; border-radius: 100px;
+  font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 500;
+  cursor: pointer; border: 1px solid var(--border);
+  transition: background .2s; background: transparent;
+}
+.btn-detail:hover { background: var(--cream-dark); }
+.btn-detail.primary { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+.btn-detail.primary:hover { opacity: .85; }
+.btn-detail.danger { color: var(--danger); border-color: rgba(192,57,43,.2); }
+.btn-detail.danger:hover { background: var(--danger-soft); }
+
+/* ── EMPTY ── */
+.empty-row td {
+  text-align: center; padding: 40px;
+  color: var(--ink-soft); font-size: 14px;
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--ink); color: var(--cream);
+  padding: 12px 24px; border-radius: 100px;
+  font-size: 14px; font-weight: 500;
+  transition: transform .3s ease;
+  z-index: 300; white-space: nowrap;
+}
+.toast.visible { transform: translateX(-50%) translateY(0); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 700px) {
+  .admin-body { padding: 16px; }
+  .topbar { padding: 14px 16px; }
+  .topbar-badge { display: none; }
+  table { font-size: 13px; }
+  thead th, tbody td { padding: 10px 10px; }
+  .detail-panel { max-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ LOGIN ══════════════════ -->
+<div class="screen active" id="screen-login">
+  <div class="login-box">
+    <div class="login-logo">mi<span>negocio</span>.com.ar</div>
+    <div class="login-eyebrow">Panel Administrador</div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="admin@minegocio.com.ar" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="login-pass" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <button class="btn-main" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="login-error">Credenciales incorrectas.</div>
+  </div>
+</div>
+
+<!-- ══════════════════ DASHBOARD ══════════════════ -->
+<div class="screen" id="screen-dashboard">
+
+  <div class="topbar">
+    <div>
+      <span class="topbar-logo">mi<span>negocio</span>.com.ar</span>
+      <span class="topbar-badge">Panel Administrador</span>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Salir</button>
+  </div>
+
+  <div class="admin-body">
+
+    <!-- METRICS -->
+    <div class="metrics-grid" id="metrics-grid"></div>
+
+    <!-- TABLE -->
+    <div class="section-header">
+      <div class="section-title-sm">Todas las tiendas</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="filter-tabs">
+          <button class="filter-tab active" onclick="filterTable('all', this)">Todas</button>
+          <button class="filter-tab" onclick="filterTable('active', this)">Activas</button>
+          <button class="filter-tab" onclick="filterTable('trial', this)">En prueba</button>
+          <button class="filter-tab" onclick="filterTable('blocked', this)">Bloqueadas</button>
+        </div>
+        <button class="btn-nueva-tienda" onclick="openNuevaTienda()">+ Nueva tienda</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Negocio</th>
+            <th>Plan</th>
+            <th>Estado</th>
+            <th>WhatsApp clicks</th>
+            <th>Vencimiento</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="stores-tbody"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════ MODAL EXTEND ══════════════════ -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Extender vencimiento</div>
+    <div class="modal-sub" id="modal-sub">Elegí la nueva fecha de vencimiento.</div>
+    <div class="modal-field">
+      <label id="modal-field-label">Nueva fecha</label>
+      <input type="date" id="modal-date">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-modal-save" onclick="saveModal()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ MODAL NUEVA TIENDA ══════════════════ -->
+<div class="modal-overlay" id="modal-nueva" onclick="closeNueva(event)">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-title">Nueva tienda</div>
+    <div class="modal-sub">Completá los datos del nuevo cliente. Le vas a enviar el link y la clave por WhatsApp.</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="modal-field" style="margin:0">
+        <label>Nombre del negocio *</label>
+        <input type="text" id="n-nombre" placeholder="Ej: Kiosco Sol">
+      </div>
+      <div class="modal-field" style="margin:0">
+        <label>Dueño/a *</label>
+        <input type="text" id="n-dueno" placeholder="Ej: María García">
+      </div>
+    </div>
+
+    <div class="modal-field">
+      <label>WhatsApp *</label>
+      <input type="tel" id="n-wa" placeholder="Ej: 341 5550000">
+    </div>
+
+    <div class="modal-field">
+      <label>Email (para el login del cliente) *</label>
+      <input type="email" id="n-email" placeholder="Ej: kiosco@gmail.com">
+    </div>
+
+    <div class="modal-field">
+      <label>Contraseña inicial *</label>
+      <input type="text" id="n-pass" placeholder="Ej: kiosco2025">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="modal-field" style="margin:0">
+        <label>Plan</label>
+        <select id="n-plan">
+          <option value="basico">Básico — $3.000/mes</option>
+          <option value="pro">Pro — $5.000/mes</option>
+        </select>
+      </div>
+      <div class="modal-field" style="margin:0">
+        <label>Rubro</label>
+        <select id="n-rubro">
+          <option value="">Sin especificar</option>
+          <option>Kiosco</option>
+          <option>Dietética</option>
+          <option>Librería</option>
+          <option>Electrónica</option>
+          <option>Perfumería</option>
+          <option>Rotisería</option>
+          <option>Indumentaria</option>
+          <option>Ferretería</option>
+          <option>Repostería</option>
+          <option>Otro</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-field">
+      <label>Período de prueba</label>
+      <select id="n-periodo">
+        <option value="30">30 días gratis</option>
+        <option value="0">Sin período de prueba (ya paga)</option>
+        <option value="7">7 días</option>
+        <option value="15">15 días</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeNueva()">Cancelar</button>
+      <button class="btn-modal-save" onclick="saveNueva()">Crear tienda</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ DETAIL PANEL ══════════════════ -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail(event)">
+  <div class="detail-panel" id="detail-panel">
+    <button class="detail-close" onclick="closeDetail()">← Cerrar</button>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const ADMIN = { email: 'admin@minegocio.com.ar', pass: 'admin2025' };
+
+const today = new Date();
+const d = (offset) => {
+  const d = new Date(today);
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().split('T')[0];
+};
+
+let stores = [
+  { id: 1, name: 'JAE Accesorios',      owner: 'Jorge Acevedo',    plan: 'basico', status: 'active',  wa: '3415550001', expiry: d(18),  clicks: 47,  income: 3000 },
+  { id: 2, name: 'Librería Vitreaux',   owner: 'Ana Benítez',      plan: 'pro',    status: 'active',  wa: '3415550002', expiry: d(25),  clicks: 132, income: 5000 },
+  { id: 3, name: 'Dietética Natureza',  owner: 'Laura Montes',     plan: 'pro',    status: 'trial',   wa: '3415550003', expiry: d(12),  clicks: 23,  income: 0    },
+  { id: 4, name: 'Kiosco El Farol',     owner: 'Raúl Soto',        plan: 'basico', status: 'trial',   wa: '3415550004', expiry: d(5),   clicks: 8,   income: 0    },
+  { id: 5, name: 'Perfumería Bloom',    owner: 'Carla Ríos',       plan: 'pro',    status: 'expiring', wa: '3415550005', expiry: d(3),  clicks: 61,  income: 5000 },
+  { id: 6, name: 'Ferretería Central',  owner: 'Pablo Giménez',    plan: 'basico', status: 'blocked', wa: '3415550006', expiry: d(-8), clicks: 19,  income: 0    },
+  { id: 7, name: 'Rotisería Don Tito',  owner: 'Tito Alvarado',    plan: 'basico', status: 'blocked', wa: '3415550007', expiry: d(-15), clicks: 5,  income: 0    },
+];
+
+let activeFilter = 'all';
+let modalAction = null;
+let modalStoreId = null;
+let detailStoreId = null;
+
+// ── LOGIN ──
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  if (email === ADMIN.email && pass === ADMIN.pass) {
+    document.getElementById('login-error').classList.remove('visible');
+    showDashboard();
+  } else {
+    document.getElementById('login-error').classList.add('visible');
+    document.getElementById('login-pass').value = '';
+  }
+}
+
+function doLogout() {
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-pass').value  = '';
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-login').classList.add('active');
+}
+
+// ── DASHBOARD ──
+function showDashboard() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-dashboard').classList.add('active');
+  updateMetrics();
+  renderTable(activeFilter);
+}
+
+function updateMetrics() {
+  const active   = stores.filter(s => s.status === 'active' || s.status === 'expiring').length;
+  const trial    = stores.filter(s => s.status === 'trial').length;
+  const blocked  = stores.filter(s => s.status === 'blocked').length;
+  const income   = stores.reduce((acc, s) => acc + s.income, 0);
+  const clicks   = stores.reduce((acc, s) => acc + s.clicks, 0);
+
+  document.getElementById('metrics-grid').innerHTML = `
+    <div class="metric-card">
+      <div class="metric-icon">🏪</div>
+      <div class="metric-label">Tiendas activas</div>
+      <div class="metric-value">${active}</div>
+      <div class="metric-sub">${blocked} bloqueada${blocked !== 1 ? 's' : ''}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon">🆓</div>
+      <div class="metric-label">En período de prueba</div>
+      <div class="metric-value">${trial}</div>
+      <div class="metric-sub">30 días gratis</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon">💰</div>
+      <div class="metric-label">Ingresos del mes</div>
+      <div class="metric-value">$${income.toLocaleString('es-AR')}</div>
+      <div class="metric-sub">${active} pagando</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon">💬</div>
+      <div class="metric-label">Clicks WhatsApp</div>
+      <div class="metric-value">${clicks}</div>
+      <div class="metric-sub">Total histórico</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon">⚠️</div>
+      <div class="metric-label">Vencen en 7 días</div>
+      <div class="metric-value">${stores.filter(s => { const diff = daysDiff(s.expiry); return diff >= 0 && diff <= 7; }).length}</div>
+      <div class="metric-sub">Contactar hoy</div>
+    </div>
+  `;
+}
+
+function daysDiff(expiry) {
+  const exp = new Date(expiry);
+  const now = new Date(); now.setHours(0,0,0,0);
+  return Math.round((exp - now) / 86400000);
+}
+
+function formatExpiry(expiry) {
+  const diff = daysDiff(expiry);
+  const date = new Date(expiry).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  if (diff < 0)  return `<span class="expiry-overdue">${date} (vencido hace ${Math.abs(diff)}d)</span>`;
+  if (diff <= 7) return `<span class="expiry-soon">${date} (${diff}d)</span>`;
+  return `<span class="expiry-normal">${date}</span>`;
+}
+
+function getStatusBadge(s) {
+  const diff = daysDiff(s.expiry);
+  if (s.status === 'blocked' || diff < 0) return '<span class="badge badge-blocked">Bloqueada</span>';
+  if (diff <= 7 && s.status !== 'trial')  return '<span class="badge badge-expiring">Vence pronto</span>';
+  if (s.status === 'trial')               return '<span class="badge badge-trial">Prueba gratis</span>';
+  return '<span class="badge badge-active">Activa</span>';
+}
+
+function isBlocked(s) { return s.status === 'blocked' || daysDiff(s.expiry) < 0; }
+
+function getActions(s) {
+  const blocked = isBlocked(s);
+  return `
+    <div class="row-actions">
+      <button class="btn-sm" onclick="openDetail(${s.id})">Ver</button>
+      <button class="btn-sm btn-extend" onclick="openExtend(${s.id})">Extender</button>
+      ${blocked
+        ? `<button class="btn-sm btn-success" onclick="activateStore(${s.id})">Activar</button>`
+        : `<button class="btn-sm btn-danger" onclick="blockStore(${s.id})">Bloquear</button>`
+      }
+    </div>`;
+}
+
+function renderTable(filter) {
+  activeFilter = filter;
+  const filtered = stores.filter(s => {
+    if (filter === 'all')     return true;
+    if (filter === 'active')  return !isBlocked(s) && s.status !== 'trial';
+    if (filter === 'trial')   return s.status === 'trial';
+    if (filter === 'blocked') return isBlocked(s);
+    return true;
+  });
+
+  const tbody = document.getElementById('stores-tbody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No hay tiendas en esta categoría.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(s => `
+    <tr>
+      <td>
+        <div class="store-name">${s.name}</div>
+        <div class="store-owner">${s.owner}</div>
+      </td>
+      <td><span class="plan-tag plan-${s.plan}">${s.plan === 'pro' ? 'Pro' : 'Básico'}</span></td>
+      <td>${getStatusBadge(s)}</td>
+      <td>${s.clicks} clicks</td>
+      <td>${formatExpiry(s.expiry)}</td>
+      <td>${getActions(s)}</td>
+    </tr>
+  `).join('');
+}
+
+function filterTable(filter, btn) {
+  document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable(filter);
+}
+
+// ── ACCIONES ──
+function blockStore(id) {
+  const s = stores.find(s => s.id === id);
+  if (!s) return;
+  if (!confirm(`¿Bloquear "${s.name}"? No podrá acceder a su panel.`)) return;
+  s.status = 'blocked';
+  s.income = 0;
+  updateMetrics();
+  renderTable(activeFilter);
+  showToast(`${s.name} bloqueada`);
+}
+
+function activateStore(id) {
+  const s = stores.find(s => s.id === id);
+  if (!s) return;
+  s.status = 'active';
+  s.expiry = d(30);
+  s.income = s.plan === 'pro' ? 5000 : 3000;
+  updateMetrics();
+  renderTable(activeFilter);
+  if (detailStoreId === id) openDetail(id);
+  showToast(`${s.name} activada — vence en 30 días`);
+}
+
+function openExtend(id) {
+  modalAction = 'extend';
+  modalStoreId = id;
+  const s = stores.find(s => s.id === id);
+  document.getElementById('modal-title').textContent = `Extender — ${s.name}`;
+  document.getElementById('modal-sub').textContent = 'Elegí la nueva fecha de vencimiento.';
+  document.getElementById('modal-field-label').textContent = 'Nueva fecha de vencimiento';
+  document.getElementById('modal-date').value = s.expiry > d(0) ? s.expiry : d(30);
+  document.getElementById('modal-overlay').classList.add('visible');
+}
+
+function openNuevaTienda() {
+  document.getElementById('n-nombre').value = '';
+  document.getElementById('n-dueno').value  = '';
+  document.getElementById('n-wa').value     = '';
+  document.getElementById('n-email').value  = '';
+  document.getElementById('n-pass').value   = '';
+  document.getElementById('n-plan').value   = 'basico';
+  document.getElementById('n-rubro').value  = '';
+  document.getElementById('n-periodo').value = '30';
+  document.getElementById('modal-nueva').classList.add('visible');
+}
+
+function closeNueva(e) {
+  if (e && e.target !== document.getElementById('modal-nueva')) return;
+  document.getElementById('modal-nueva').classList.remove('visible');
+}
+
+function saveNueva() {
+  const nombre  = document.getElementById('n-nombre').value.trim();
+  const dueno   = document.getElementById('n-dueno').value.trim();
+  const wa      = document.getElementById('n-wa').value.trim();
+  const email   = document.getElementById('n-email').value.trim();
+  const pass    = document.getElementById('n-pass').value.trim();
+  const plan    = document.getElementById('n-plan').value;
+  const rubro   = document.getElementById('n-rubro').value;
+  const periodo = parseInt(document.getElementById('n-periodo').value);
+
+  if (!nombre || !dueno || !wa || !email || !pass) {
+    alert('Completá todos los campos obligatorios (*).');
+    return;
+  }
+
+  const slug = nombre.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+  const isTrial  = periodo > 0;
+  const newStore = {
+    id:     stores.length ? Math.max(...stores.map(s => s.id)) + 1 : 1,
+    name:   nombre,
+    owner:  dueno,
+    plan,
+    rubro,
+    email,
+    pass,
+    status: isTrial ? 'trial' : 'active',
+    wa,
+    expiry: d(periodo || 30),
+    clicks: 0,
+    income: isTrial ? 0 : (plan === 'pro' ? 5000 : 3000),
+    slug,
+  };
+
+  stores.unshift(newStore);
+  document.getElementById('modal-nueva').classList.remove('visible');
+  updateMetrics();
+  renderTable(activeFilter);
+
+  const planLabel = plan === 'pro' ? 'Pro ($5.000/mes)' : 'Básico ($3.000/mes)';
+  const msg = encodeURIComponent(
+    `¡Hola ${dueno}! 🎉 Tu tienda en *minegocio.com.ar* ya está lista.\n\n` +
+    `🏪 *${nombre}*\n\n` +
+    `🔗 *Tu tienda pública* (para compartir con tus clientes):\n` +
+    `minegocio.com.ar/${slug}\n\n` +
+    `⚙️ *Tu Panel Tienda* (para cargar y gestionar productos):\n` +
+    `minegocio.com.ar/panel-tienda\n\n` +
+    `📧 Email de acceso: ${email}\n` +
+    `🔑 Contraseña: ${pass}\n` +
+    `📦 Plan: ${planLabel}\n` +
+    (isTrial ? `⏳ Período de prueba: ${periodo} días gratis\n` : '') +
+    `\nEntrá al panel, cargá tus productos y compartí el link de tu tienda. ¡Cualquier duda estoy acá!`
+  );
+
+  showToast(`Tienda "${nombre}" creada`);
+  setTimeout(() => {
+    window.open(`https://wa.me/54${wa.replace(/\D/g,'')}?text=${msg}`, '_blank');
+  }, 800);
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modal-overlay')) return;
+  document.getElementById('modal-overlay').classList.remove('visible');
+  modalAction = null; modalStoreId = null;
+}
+
+function saveModal() {
+  const newDate = document.getElementById('modal-date').value;
+  if (!newDate) { alert('Elegí una fecha.'); return; }
+
+  if (modalAction === 'extend') {
+    const s = stores.find(s => s.id === modalStoreId);
+    s.expiry = newDate;
+    if (isBlocked(s)) { s.status = 'active'; s.income = s.plan === 'pro' ? 5000 : 3000; }
+    showToast(`Vencimiento extendido para ${s.name}`);
+  }
+
+  document.getElementById('modal-overlay').classList.remove('visible');
+  updateMetrics();
+  renderTable(activeFilter);
+  if (detailStoreId === modalStoreId) openDetail(modalStoreId);
+  modalAction = null; modalStoreId = null;
+}
+
+// ── DETAIL PANEL ──
+function openDetail(id) {
+  detailStoreId = id;
+  const s = stores.find(s => s.id === id);
+  const diff = daysDiff(s.expiry);
+  const blocked = isBlocked(s);
+  const income = s.plan === 'pro' ? '$5.000' : '$3.000';
+
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-store-name">${s.name}</div>
+    <div style="margin-bottom:20px">${getStatusBadge(s)}</div>
+    <div class="detail-row"><span class="detail-row-label">Dueño/a</span><span class="detail-row-value">${s.owner}</span></div>
+    <div class="detail-row"><span class="detail-row-label">Plan</span><span class="detail-row-value">${s.plan === 'pro' ? 'Pro' : 'Básico'}</span></div>
+    <div class="detail-row"><span class="detail-row-label">Cuota mensual</span><span class="detail-row-value">${s.status === 'trial' ? 'En prueba' : income}</span></div>
+    <div class="detail-row"><span class="detail-row-label">WhatsApp</span><span class="detail-row-value">${s.wa}</span></div>
+    <div class="detail-row"><span class="detail-row-label">Clicks WA</span><span class="detail-row-value">${s.clicks} totales</span></div>
+    <div class="detail-row"><span class="detail-row-label">Vencimiento</span><span class="detail-row-value">${formatExpiry(s.expiry)}</span></div>
+    <div class="detail-row"><span class="detail-row-label">Días restantes</span><span class="detail-row-value">${diff >= 0 ? diff + ' días' : 'Vencido'}</span></div>
+    <div class="detail-actions">
+      <button class="btn-detail primary" onclick="openExtend(${s.id})">Extender vencimiento</button>
+      ${blocked
+        ? `<button class="btn-detail" onclick="activateStore(${s.id}); closeDetail()">Activar tienda</button>`
+        : `<button class="btn-detail danger" onclick="blockStore(${s.id}); closeDetail()">Bloquear tienda</button>`
+      }
+      <a href="https://wa.me/54${s.wa.replace(/\s/g,'')}" target="_blank" style="text-decoration:none">
+        <button class="btn-detail" style="width:100%;color:var(--wa-dark);border-color:rgba(26,171,82,.2)">Contactar por WhatsApp</button>
+      </a>
+    </div>
+  `;
+  document.getElementById('detail-overlay').classList.add('visible');
+}
+
+function closeDetail(e) {
+  if (e && e.target !== document.getElementById('detail-overlay')) return;
+  document.getElementById('detail-overlay').classList.remove('visible');
+  detailStoreId = null;
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 2800);
+}
+</script>
+</body>
+</html>
