@@ -756,26 +756,353 @@ body {
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ══════════════════════════════════════
-// ESTADO
-// ══════════════════════════════════════
-const DEMO_USER = { email: 'demo@minegocio.com', pass: '123456', store: 'JAE Accesorios', slug: 'jae-accesorios' };
+const SUPA_URL = 'https://mbeplryehybxsifkltod.supabase.co';
+const SUPA_KEY = 'sb_publishable_mOqt9UcDHLg9J0ZfV1KTEw_XJ6CR0kE';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 let state = {
   loggedIn: false,
+  storeId: null,
   storeName: '',
   storeSlug: '',
+  storePass: '',
   editingId: null,
-  products: [
-    { id: 1, name: 'Control Remoto Universal', desc: 'Compatible con Samsung, LG y más', price: 4800, photo: 'https://images.unsplash.com/photo-1593359677879-a4bb92f4834c?w=200&q=80' },
-    { id: 2, name: 'Control Smart TV', desc: 'Netflix, YouTube incluidos', price: 6200, photo: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=200&q=80' },
-    { id: 3, name: 'Cargador USB-C 20W', desc: 'Carga rápida, incluye cable', price: 7500, photo: 'https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=200&q=80' },
-  ],
-  datos: { nombre: 'JAE Accesorios', rubro: 'Electrónica', descripcion: 'Controles remotos y cargadores. Envíos a todo el país.', whatsapp: '341 5550000', zona: 'Rosario, Santa Fe', pagos: 'Transferencia, Efectivo' },
-  nextId: 4,
+  products: [],
+  datos: {},
   pendingPhoto: null,
 };
+
+// ══════════════════════════════════════
+// NAVEGACIÓN
+// ══════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goTo(section) {
+  if (section === 'dashboard') {
+    updateDashboard();
+    showScreen('dashboard');
+  } else if (section === 'datos') {
+    loadDatosForm();
+    showScreen('datos');
+  } else if (section === 'productos') {
+    loadProducts();
+    showScreen('productos');
+  } else if (section === 'agregar') {
+    resetAgregarForm();
+    showScreen('agregar');
+  } else if (section === 'password') {
+    document.getElementById('pass-actual').value = '';
+    document.getElementById('pass-nueva').value = '';
+    document.getElementById('pass-repetir').value = '';
+    document.getElementById('pass-error').style.display = 'none';
+    document.getElementById('pass-ok').classList.remove('visible');
+    showScreen('password');
+  }
+}
+
+// ══════════════════════════════════════
+// LOGIN / LOGOUT
+// ══════════════════════════════════════
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const err   = document.getElementById('login-error');
+
+  if (!email || !pass) { err.classList.add('visible'); return; }
+
+  const { data, error } = await sb
+    .from('stores')
+    .select('*')
+    .eq('email', email)
+    .eq('password', pass)
+    .single();
+
+  if (error || !data) {
+    err.classList.add('visible');
+    document.getElementById('login-pass').value = '';
+    return;
+  }
+
+  // Verificar si está bloqueada o vencida
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const vence = new Date(data.expiry);
+  if (data.status === 'blocked' || vence < hoy) {
+    err.textContent = 'Tu tienda está inactiva. Contactá a minegocio.com.ar para reactivarla.';
+    err.classList.add('visible');
+    return;
+  }
+
+  state.loggedIn  = true;
+  state.storeId   = data.id;
+  state.storeName = data.name;
+  state.storeSlug = data.slug;
+  state.storePass = data.password;
+  state.datos     = {
+    nombre:      data.name,
+    rubro:       data.rubro || '',
+    descripcion: data.description || '',
+    whatsapp:    data.wa || '',
+    zona:        data.zona || '',
+    pagos:       data.pagos || '',
+  };
+
+  err.classList.remove('visible');
+  updateDashboard();
+  showScreen('dashboard');
+}
+
+function doLogout() {
+  state = { loggedIn:false, storeId:null, storeName:'', storeSlug:'', storePass:'', editingId:null, products:[], datos:{}, pendingPhoto:null };
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-pass').value  = '';
+  showScreen('login');
+}
+
+// ══════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════
+function updateDashboard() {
+  document.getElementById('store-name-display').textContent = state.storeName;
+  document.getElementById('store-link-display').textContent = 'minegocio1.vercel.app/' + state.storeSlug;
+  const count = state.products.length;
+  document.getElementById('products-count-desc').textContent =
+    count === 0 ? 'Todavía no tenés productos cargados' :
+    count === 1 ? '1 producto cargado' :
+    count + ' productos cargados';
+}
+
+function copyLink() {
+  const link = 'https://minegocio1.vercel.app/' + state.storeSlug;
+  navigator.clipboard.writeText(link).catch(() => {});
+  const btn = document.getElementById('copy-btn');
+  btn.textContent = '✓ Copiado';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+}
+
+// ══════════════════════════════════════
+// DATOS DEL NEGOCIO
+// ══════════════════════════════════════
+function loadDatosForm() {
+  const d = state.datos;
+  document.getElementById('d-nombre').value      = d.nombre || '';
+  document.getElementById('d-rubro').value        = d.rubro || '';
+  document.getElementById('d-descripcion').value  = d.descripcion || '';
+  document.getElementById('d-whatsapp').value     = d.whatsapp || '';
+  document.getElementById('d-zona').value         = d.zona || '';
+  document.getElementById('d-pagos').value        = d.pagos || '';
+  document.getElementById('datos-ok').classList.remove('visible');
+}
+
+async function saveDatos() {
+  const datos = {
+    name:        document.getElementById('d-nombre').value,
+    rubro:       document.getElementById('d-rubro').value,
+    description: document.getElementById('d-descripcion').value,
+    wa:          document.getElementById('d-whatsapp').value,
+    zona:        document.getElementById('d-zona').value,
+    pagos:       document.getElementById('d-pagos').value,
+  };
+
+  const { error } = await sb.from('stores').update(datos).eq('id', state.storeId);
+  if (error) { alert('Error al guardar: ' + error.message); return; }
+
+  state.datos.nombre = datos.name;
+  state.storeName    = datos.name;
+  document.getElementById('datos-ok').classList.add('visible');
+  setTimeout(() => document.getElementById('datos-ok').classList.remove('visible'), 2500);
+}
+
+// ══════════════════════════════════════
+// PRODUCTOS
+// ══════════════════════════════════════
+async function loadProducts() {
+  const list = document.getElementById('products-list');
+  list.innerHTML = '<div style="text-align:center;padding:32px;color:var(--ink-soft)">Cargando...</div>';
+
+  const { data, error } = await sb
+    .from('products')
+    .select('*')
+    .eq('store_id', state.storeId)
+    .eq('active', true)
+    .order('position', { ascending: true });
+
+  if (error) { list.innerHTML = 'Error al cargar productos.'; return; }
+  state.products = data || [];
+  updateDashboard();
+  renderProducts();
+}
+
+function renderProducts() {
+  const list = document.getElementById('products-list');
+  const sub  = document.getElementById('productos-sub');
+
+  if (state.products.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📦</div>
+        <p>Todavía no cargaste productos.<br>¡Agregá el primero!</p>
+      </div>`;
+    sub.textContent = '';
+    return;
+  }
+
+  sub.textContent = state.products.length + ' producto' + (state.products.length !== 1 ? 's' : '') + ' cargado' + (state.products.length !== 1 ? 's' : '') + '. Tocá Editar o Eliminar.';
+
+  list.innerHTML = state.products.map(p => `
+    <div class="product-item" id="pitem-${p.id}">
+      <img class="product-thumb" src="${p.photo_url || ''}" alt="${p.name}"
+        onerror="this.style.background='#f0ece4';this.src=''">
+      <div class="product-info">
+        <div class="product-name">${p.name}</div>
+        <div class="product-price">$${Number(p.price).toLocaleString('es-AR')}</div>
+      </div>
+      <div class="product-actions">
+        <button class="btn-edit" onclick="editProduct('${p.id}')">Editar</button>
+        <button class="btn-delete" onclick="deleteProduct('${p.id}')">Eliminar</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function deleteProduct(id) {
+  if (!confirm('¿Eliminar este producto?')) return;
+  const { error } = await sb.from('products').update({ active: false }).eq('id', id);
+  if (error) { alert('Error al eliminar'); return; }
+  await loadProducts();
+}
+
+function editProduct(id) {
+  const p = state.products.find(p => p.id === id);
+  if (!p) return;
+  state.editingId    = id;
+  state.pendingPhoto = p.photo_url;
+
+  document.getElementById('agregar-title').textContent = 'Editar producto';
+  document.getElementById('p-nombre').value = p.name;
+  document.getElementById('p-desc').value   = p.description || '';
+  document.getElementById('p-precio').value = p.price;
+
+  const preview = document.getElementById('photo-preview');
+  if (p.photo_url) { preview.src = p.photo_url; preview.style.display = 'block'; }
+  document.getElementById('product-ok').classList.remove('visible');
+  showScreen('agregar');
+}
+
+function resetAgregarForm() {
+  state.editingId    = null;
+  state.pendingPhoto = null;
+  document.getElementById('agregar-title').textContent = 'Agregar producto';
+  document.getElementById('p-nombre').value = '';
+  document.getElementById('p-desc').value   = '';
+  document.getElementById('p-precio').value = '';
+  document.getElementById('photo-preview').style.display = 'none';
+  document.getElementById('photo-preview').src = '';
+  document.getElementById('product-ok').classList.remove('visible');
+}
+
+async function saveProduct() {
+  const name  = document.getElementById('p-nombre').value.trim();
+  const desc  = document.getElementById('p-desc').value.trim();
+  const price = document.getElementById('p-precio').value;
+
+  if (!name || !price) { alert('Completá al menos el nombre y el precio.'); return; }
+
+  let error;
+  if (state.editingId) {
+    ({ error } = await sb.from('products').update({
+      name, description: desc, price: Number(price), photo_url: state.pendingPhoto || null
+    }).eq('id', state.editingId));
+  } else {
+    ({ error } = await sb.from('products').insert([{
+      store_id:    state.storeId,
+      name, description: desc,
+      price:       Number(price),
+      photo_url:   state.pendingPhoto || null,
+      active:      true,
+      position:    state.products.length,
+    }]));
+  }
+
+  if (error) { alert('Error al guardar: ' + error.message); return; }
+
+  state.pendingPhoto = null;
+  document.getElementById('product-ok').classList.add('visible');
+
+  setTimeout(async () => {
+    document.getElementById('product-ok').classList.remove('visible');
+    resetAgregarForm();
+    await loadProducts();
+    goTo('dashboard');
+  }, 1200);
+}
+
+// ══════════════════════════════════════
+// FOTO
+// ══════════════════════════════════════
+function previewPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById('photo-preview');
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+    state.pendingPhoto = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ══════════════════════════════════════
+// CAMBIAR CONTRASEÑA
+// ══════════════════════════════════════
+async function changePassword() {
+  const actual  = document.getElementById('pass-actual').value;
+  const nueva   = document.getElementById('pass-nueva').value;
+  const repetir = document.getElementById('pass-repetir').value;
+  const errEl   = document.getElementById('pass-error');
+
+  errEl.style.display = 'none';
+
+  if (!actual || !nueva || !repetir) {
+    errEl.textContent = 'Completá todos los campos.';
+    errEl.style.display = 'block'; return;
+  }
+  if (actual !== state.storePass) {
+    errEl.textContent = 'La contraseña actual es incorrecta.';
+    errEl.style.display = 'block'; return;
+  }
+  if (nueva.length < 6) {
+    errEl.textContent = 'Mínimo 6 caracteres.';
+    errEl.style.display = 'block'; return;
+  }
+  if (nueva !== repetir) {
+    errEl.textContent = 'Las contraseñas no coinciden.';
+    errEl.style.display = 'block'; return;
+  }
+
+  const { error } = await sb.from('stores').update({ password: nueva }).eq('id', state.storeId);
+  if (error) { errEl.textContent = 'Error al guardar.'; errEl.style.display = 'block'; return; }
+
+  state.storePass = nueva;
+  document.getElementById('pass-actual').value  = '';
+  document.getElementById('pass-nueva').value   = '';
+  document.getElementById('pass-repetir').value = '';
+  document.getElementById('pass-ok').classList.add('visible');
+  setTimeout(() => {
+    document.getElementById('pass-ok').classList.remove('visible');
+    goTo('dashboard');
+  }, 1800);
+}
+</script>
+</body>
+</html>
 
 // ══════════════════════════════════════
 // NAVEGACIÓN
